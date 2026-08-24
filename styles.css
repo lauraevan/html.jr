@@ -98,7 +98,7 @@ button{ font-family: inherit; cursor: pointer; }
 .nav__meta{ color: var(--ink-3); font-size: 13px; white-space: nowrap; }
 @media (max-width: 720px){ .nav__meta{ display: none; } .search{ margin: 0; } }
 
-.wrap{ position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 26px var(--pad) 60px; }
+.wrap{ position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 26px var(--pad) 120px; }
 
 /* ============================================================
    HERO CAROUSEL
@@ -144,6 +144,12 @@ button{ font-family: inherit; cursor: pointer; }
   font-family: var(--font-round); font-weight: 700;
   font-size: 320px; color: rgba(255,255,255,.10); line-height: 1; z-index: 1; user-select: none;
 }
+.hero__logo{
+  position: absolute; right: clamp(24px, 6vw, 80px); top: 50%; transform: translateY(-50%); z-index: 1;
+  max-width: 34%; max-height: 66%; object-fit: contain;
+  filter: drop-shadow(0 10px 26px rgba(0,0,0,.42));
+}
+@media (max-width: 640px){ .hero__logo{ opacity: .35; right: -10px; } }
 
 .hero__arrow{
   position: absolute; top: 50%; transform: translateY(-50%); z-index: 4;
@@ -159,26 +165,80 @@ button{ font-family: inherit; cursor: pointer; }
 .hero__dot.on{ width: 24px; background: #fff; }
 @media (max-width: 560px){ .hero__glyph{ font-size: 200px; right: -30px; } .hero__arrow{ display: none; } }
 
+/* spacing under the hero now that the paste bar is gone */
+.hero{ margin-bottom: 34px; }
+
 /* ============================================================
-   MANUAL LOAD BAR
+   FLOATING ISLAND NAV
    ============================================================ */
-.paste{ display: flex; gap: 10px; margin: 22px 0 34px; }
-.paste__input{
-  flex: 1; min-width: 0;
-  background: var(--surface); border: 1px solid var(--line);
-  border-radius: 999px; padding: 14px 22px; color: var(--ink); font-size: 15px; outline: 0;
+.island{
+  position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 50;
+  display: flex; gap: 4px; padding: 6px;
+  background: rgba(24,26,36,.72); border: 1px solid var(--line-2);
+  border-radius: 999px; box-shadow: var(--shadow-lg); backdrop-filter: blur(16px);
+}
+.island__pill{
+  position: absolute; top: 6px; left: 6px; height: calc(100% - 12px); width: 118px;
+  border-radius: 999px; background: linear-gradient(135deg, var(--accent), #9a6bff);
+  box-shadow: 0 6px 16px rgba(123,108,255,.4);
+  transition: transform .28s cubic-bezier(.4,0,.15,1);
+}
+.island__tab{
+  position: relative; z-index: 1;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  width: 118px; padding: 11px 0; border: 0; background: none;
+  color: var(--ink-2); font-family: var(--font-round); font-weight: 600; font-size: 15px;
+  border-radius: 999px; transition: color .2s;
+}
+.island__tab svg{ width: 17px; height: 17px; fill: currentColor; }
+.island__tab.is-active{ color: #fff; }
+
+/* ============================================================
+   BRING YOUR OWN (html view)
+   ============================================================ */
+.byo{ position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 40px var(--pad) 130px; }
+.byo__inner{ text-align: center; }
+.byo__title{ font-family: var(--font-round); font-weight: 700; font-size: 32px; margin: 6px 0 6px; }
+.byo__sub{ color: var(--ink-2); margin: 0 0 28px; }
+
+.drop{
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 46px 24px; border-radius: var(--r-lg);
+  border: 2px dashed var(--line-2); background: var(--surface);
+  cursor: pointer; transition: border-color .16s, background .16s, transform .16s;
+}
+.drop:hover, .drop:focus-visible{ border-color: var(--accent); background: var(--surface-2); outline: none; }
+.drop.drag{ border-color: var(--accent); background: rgba(123,108,255,.1); transform: scale(1.01); }
+.drop__icon{ width: 54px; height: 54px; border-radius: 16px; display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--accent), #9a6bff); color: #fff; box-shadow: var(--shadow-sm); }
+.drop__icon svg{ width: 26px; height: 26px; }
+.drop__title{ font-family: var(--font-round); font-weight: 600; font-size: 17px; }
+.drop__hint{ font-size: 13px; color: var(--ink-3); }
+
+.byo__or{ display: flex; align-items: center; gap: 14px; color: var(--ink-3); font-size: 13px; margin: 22px 0; }
+.byo__or::before, .byo__or::after{ content: ""; flex: 1; height: 1px; background: var(--line); }
+
+.ghrow{ display: flex; gap: 10px; }
+.ghrow__input{
+  flex: 1; min-width: 0; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 999px; padding: 14px 22px; color: var(--ink); font-size: 15px; outline: 0; text-align: left;
   transition: border-color .15s, background .15s;
 }
-.paste__input:focus{ border-color: var(--line-2); background: var(--surface-2); }
-.paste__input::placeholder{ color: var(--ink-3); }
-.paste__btn{
+.ghrow__input:focus{ border-color: var(--line-2); background: var(--surface-2); }
+.ghrow__input::placeholder{ color: var(--ink-3); }
+.ghrow__btn{
   border: 0; border-radius: 999px; padding: 0 30px;
   background: linear-gradient(135deg, var(--accent), #9a6bff); color: #fff; font-weight: 700; font-size: 15px;
   box-shadow: var(--shadow-sm); transition: transform .12s, filter .12s;
 }
-.paste__btn:hover{ transform: translateY(-2px); filter: brightness(1.06); }
-.paste__btn:active{ transform: translateY(0); }
-@media (max-width: 560px){ .paste__btn{ padding: 14px 22px; } }
+.ghrow__btn:hover{ transform: translateY(-2px); filter: brightness(1.06); }
+
+.loadingfile{
+  display: inline-flex; align-items: center; gap: 10px; margin-top: 26px;
+  padding: 11px 20px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line-2);
+  color: var(--ink); font-weight: 500; animation: pop .2s ease;
+}
+@media (max-width: 560px){ .ghrow__btn{ padding: 14px 20px; } }
 
 /* ============================================================
    FLOOR / GRID
@@ -205,6 +265,11 @@ button{ font-family: inherit; cursor: pointer; }
   background: radial-gradient(80% 120% at 20% 0%, rgba(255,255,255,.22), rgba(255,255,255,0) 60%);
 }
 .card__glyph{ font-family: var(--font-round); font-weight: 700; font-size: 60px; color: rgba(255,255,255,.9); z-index: 1; }
+.card__logo{
+  position: absolute; inset: 0; margin: auto; z-index: 2;
+  max-width: 58%; max-height: 60%; object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,.4));
+}
 .card__chip{
   position: absolute; top: 12px; left: 12px; z-index: 2;
   font-size: 11.5px; font-weight: 600; color: #fff;
@@ -233,22 +298,15 @@ button{ font-family: inherit; cursor: pointer; }
 .empty{ text-align: center; color: var(--ink-3); padding: 50px 0; }
 
 /* ============================================================
-   FOOTER  (+ hidden scratch trigger)
+   HIDDEN SCRATCH TRIGGER  (faint dot, bottom-right corner)
    ============================================================ */
-.foot{
-  position: relative; z-index: 1;
-  display: flex; align-items: center; gap: 12px;
-  padding: 20px var(--pad); border-top: 1px solid var(--line);
-  color: var(--ink-3); font-size: 13px;
+.spark{
+  position: fixed; right: 14px; bottom: 14px; z-index: 45;
+  width: 14px; height: 14px; padding: 0; border-radius: 50%;
+  border: 0; background: var(--ink-3); opacity: .16;
+  transition: opacity .2s, transform .2s, background .2s;
 }
-.foot__name{ font-family: var(--font-round); font-weight: 600; color: var(--ink-2); }
-.foot__mid{ flex: 1; }
-.foot__spark{
-  background: none; border: 0; color: var(--ink-3); opacity: .35;
-  font-size: 22px; line-height: 1; padding: 4px 8px; border-radius: 8px;
-  transition: opacity .2s, color .2s;
-}
-.foot__spark:hover{ opacity: 1; color: var(--accent); }
+.spark:hover{ opacity: .9; transform: scale(1.15); background: var(--accent); }
 
 /* ============================================================
    VIEWER  (near fullscreen)

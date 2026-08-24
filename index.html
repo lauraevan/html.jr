@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="HTML JR. Pick a loader and it opens. T9OS, gn-math, Cherri and more, or paste any link." />
+  <meta name="description" content="HTML JR. Pick a loader and it opens. T9OS, Cine OS, gn-math, Cherri and more, or bring your own html." />
   <meta name="theme-color" content="#12131a" />
   <title>HTML JR</title>
 
@@ -21,7 +21,7 @@
   <!-- ================= TOP BAR ================= -->
   <header class="nav">
     <button class="brand" id="brandHome" aria-label="home">
-      <span class="brand__mark">JR</span>
+      <span class="brand__mark" id="brandMark">JR</span>
       <span class="brand__name">HTML&nbsp;JR</span>
     </button>
 
@@ -33,9 +33,8 @@
     <div class="nav__meta"><span id="navCount">0 loaders</span></div>
   </header>
 
-  <main class="wrap">
-
-    <!-- ================= HERO ================= -->
+  <!-- ================= LIBRARY VIEW ================= -->
+  <main class="wrap" id="libraryView">
     <section class="hero" aria-label="featured">
       <div class="hero__track" id="heroTrack"></div>
       <button class="hero__arrow hero__arrow--prev" id="heroPrev" aria-label="previous">‹</button>
@@ -43,28 +42,52 @@
       <div class="hero__dots" id="heroDots"></div>
     </section>
 
-    <!-- ================= MANUAL LOAD ================= -->
-    <section class="paste">
-      <input id="manual" class="paste__input" type="text" spellcheck="false" autocomplete="off"
-             placeholder="paste any link and hit load" />
-      <button id="manualBtn" class="paste__btn">Load</button>
-    </section>
-
-    <!-- ================= GRID ================= -->
     <section class="floor" aria-label="all loaders">
-      <div class="floor__head">
-        <h2 class="floor__title">All loaders</h2>
-      </div>
+      <div class="floor__head"><h2 class="floor__title">All loaders</h2></div>
       <div class="grid" id="grid"></div>
       <p class="empty" id="empty" hidden>nothing matches that search.</p>
     </section>
   </main>
 
-  <footer class="foot">
-    <span class="foot__name">HTML JR</span>
-    <span class="foot__mid">made for messing around</span>
-    <button class="foot__spark" id="editorTrigger" title=" " aria-label="scratch">·</button>
-  </footer>
+  <!-- ================= HTML VIEW (bring your own) ================= -->
+  <section class="byo" id="htmlView" hidden>
+    <div class="byo__inner">
+      <h2 class="byo__title">Bring your own</h2>
+      <p class="byo__sub">drop a file or bring a github link, and it opens.</p>
+
+      <label class="drop" id="drop" tabindex="0">
+        <input id="fileInput" type="file" accept=".html,.htm,.svg,image/svg+xml,text/html" hidden />
+        <span class="drop__icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0l-5 5m5-5l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </span>
+        <span class="drop__title">drop a file, or click to pick</span>
+        <span class="drop__hint">.html and .svg</span>
+      </label>
+
+      <div class="byo__or"><span>or</span></div>
+
+      <div class="ghrow">
+        <input id="ghInput" class="ghrow__input" type="text" spellcheck="false" autocomplete="off"
+               placeholder="github repo (owner/repo) or any link" />
+        <button id="ghBtn" class="ghrow__btn">Load</button>
+      </div>
+
+      <div class="loadingfile" id="loadingFile" hidden><span class="pulse"></span> loading file</div>
+    </div>
+  </section>
+
+  <!-- ================= FLOATING ISLAND NAV ================= -->
+  <nav class="island" aria-label="sections">
+    <span class="island__pill" id="islandPill" aria-hidden="true"></span>
+    <button class="island__tab is-active" data-view="library">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>
+      <span>Library</span>
+    </button>
+    <button class="island__tab" data-view="html">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8l-4 4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 8l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>HTML</span>
+    </button>
+  </nav>
 
   <!-- ================= VIEWER ================= -->
   <div class="viewer" id="viewer" hidden>
@@ -102,6 +125,7 @@
     </div>
   </div>
 
+  <button class="spark" id="editorTrigger" title=" " aria-label="scratch"></button>
   <div class="toasts" id="toasts" aria-live="polite"></div>
 
   <script src="app.js"></script>

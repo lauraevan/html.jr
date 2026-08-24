@@ -1,6 +1,6 @@
 /* ============================================================
    HTML JR  ::  app.js
-   pick a loader and it opens. paste a link and it opens.
+   pick a loader and it opens. bring your own and it opens.
    ============================================================ */
 'use strict';
 
@@ -13,11 +13,12 @@ const state = {
   heroIdx: 0,
   heroTimer: null,
   query: '',
+  view: 'library',
 };
 
-/* ---------- small helpers ---------- */
+/* ---------- helpers ---------- */
 function shade(hex, amt){
-  const n = parseInt(hex.replace('#',''), 16);
+  const n = parseInt((hex || '#7b6cff').replace('#',''), 16);
   let r = (n >> 16) + amt, g = ((n >> 8) & 255) + amt, b = (n & 255) + amt;
   r = Math.max(0, Math.min(255, r)); g = Math.max(0, Math.min(255, g)); b = Math.max(0, Math.min(255, b));
   return '#' + (0x1000000 + (r << 16) + (g << 8) + b).toString(16).slice(1);
@@ -31,18 +32,21 @@ function hostOf(u){ try { return new URL(u).hostname.replace(/^www\./,''); } cat
    DATA
    ============================================================ */
 const FALLBACK = { loaders: [
-  { id:'t9os', name:'T9OS', version:'V.097', tag:'desktop os', url:'https://t9os.space/', source:'https://github.com/t9lat22/t9lat22.github.io', accent:'#5b8cff', featured:true, blurb:'a whole fake desktop with games and apps built in' },
-  { id:'gn-math', name:'gn-math', version:'', tag:'games', url:'https://cdn.jsdelivr.net/gh/genizymath/gnnew@main/index.html', source:'https://github.com/genizymath/gnnew', accent:'#fc2651', featured:true, blurb:'big grid of unblocked games, loads fast' },
-  { id:'cherri', name:'Cherri', version:'V2', tag:'proxy', url:'https://cdn.jsdelivr.net/gh/x8rr/cherri-v2-leak@main/public/index.html', source:'https://github.com/x8rr/cherri-v2-leak', accent:'#c9184a', featured:true, blurb:'leaked build of the cherri proxy' },
+  { id:'t9os', name:'T9OS', version:'V.097', tag:'desktop os', url:'https://t9os.space/', source:'https://github.com/t9lat22/t9lat22.github.io', logo:'https://cdn.jsdelivr.net/gh/t9lat22/t9lat22.github.io@master/Logo22.png', accent:'#5b8cff', featured:true, blurb:'a whole fake desktop with games and apps built in' },
+  { id:'cine-os', name:'Cine OS', version:'V2', tag:'desktop os', url:'https://cdn.jsdelivr.net/gh/nathanpikelny6-oss/CineOS@main/index.html', source:'https://github.com/nathanpikelny6-oss/CineOS', accent:'#16c2a3', featured:true, blurb:'cinematic desktop with a boot sequence and app dock' },
+  { id:'gn-math', name:'gn-math', version:'', tag:'games', url:'https://cdn.jsdelivr.net/gh/genizymath/gnnew@main/index.html', source:'https://github.com/genizymath/gnnew', logo:'https://cdn.jsdelivr.net/gh/genizymath/gnnew@main/favicon.png', accent:'#fc2651', featured:true, blurb:'big grid of unblocked games, loads fast' },
+  { id:'cherri', name:'Cherri', version:'V2', tag:'proxy', url:'https://cdn.jsdelivr.net/gh/x8rr/cherri-v2-leak@main/public/index.html', source:'https://github.com/x8rr/cherri-v2-leak', logo:'https://cdn.jsdelivr.net/gh/x8rr/cherri-v2-leak@main/public/assets/img/fav.png', accent:'#c9184a', featured:true, blurb:'leaked build of the cherri proxy' },
+  { id:'discord', name:'Discord', version:'', tag:'chat', url:'library/discord.html', source:'', accent:'#5865f2', featured:false, blurb:'the discord landing page, saved and ready to open' },
+  { id:'google-classroom', name:'Google Classroom', version:'', tag:'video', url:'library/google-classroom.html', source:'', accent:'#2e7d32', featured:false, blurb:'search and watch, tucked behind a classroom tab' },
 ]};
 
 async function loadData(){
   let data = null;
   try { const res = await fetch('loaders.json', { cache:'no-cache' }); if (res.ok) data = await res.json(); } catch {}
   if (!data || !Array.isArray(data.loaders) || !data.loaders.length) data = FALLBACK;
-  state.loaders = data.loaders.map(l => ({ accent:'#7b6cff', tag:'loader', version:'', blurb:'', source:'', featured:false, ...l }));
+  state.loaders = data.loaders.map(l => ({ accent:'#7b6cff', tag:'loader', version:'', blurb:'', source:'', logo:'', featured:false, ...l }));
   state.hero = state.loaders.filter(l => l.featured);
-  if (!state.hero.length) state.hero = state.loaders.slice(0, 3);
+  if (!state.hero.length) state.hero = state.loaders.slice(0, 4);
   buildHero();
   buildGrid();
   $('#navCount').textContent = state.loaders.length + (state.loaders.length === 1 ? ' loader' : ' loaders');
@@ -55,7 +59,9 @@ function buildHero(){
   const track = $('#heroTrack'), dots = $('#heroDots');
   track.innerHTML = state.hero.map(l => `
     <div class="hero__slide" style="background:${grad(l.accent)}">
-      <div class="hero__glyph">${esc(letter(l.name))}</div>
+      ${l.logo
+        ? `<img class="hero__logo" src="${esc(l.logo)}" alt="" onerror="this.remove()">`
+        : `<div class="hero__glyph">${esc(letter(l.name))}</div>`}
       <div class="hero__inner">
         <span class="hero__eyebrow">popular right now</span>
         <h2 class="hero__name">${esc(l.name)}${l.version ? `<span class="hero__ver">${esc(l.version)}</span>` : ''}</h2>
@@ -74,10 +80,7 @@ function buildHero(){
   }));
   $$('.hero__dot', dots).forEach(d => d.addEventListener('click', () => goHero(+d.dataset.i, true)));
 
-  state.heroIdx = 0;
-  applyHero();
-  startHero();
-
+  state.heroIdx = 0; applyHero(); startHero();
   const hero = $('.hero');
   hero.addEventListener('mouseenter', stopHero);
   hero.addEventListener('mouseleave', startHero);
@@ -88,8 +91,7 @@ function applyHero(){
 }
 function goHero(i, manual){
   const n = state.hero.length; if (!n) return;
-  state.heroIdx = (i + n) % n;
-  applyHero();
+  state.heroIdx = (i + n) % n; applyHero();
   if (manual) startHero();
 }
 function startHero(){ stopHero(); if (state.hero.length > 1) state.heroTimer = setInterval(() => goHero(state.heroIdx + 1), 5200); }
@@ -111,6 +113,7 @@ function buildGrid(){
       <div class="card__art" style="background:${grad(l.accent)}">
         <span class="card__chip">${esc(l.tag)}</span>
         <span class="card__glyph">${esc(letter(l.name))}</span>
+        ${l.logo ? `<img class="card__logo" src="${esc(l.logo)}" alt="" loading="lazy" onerror="this.remove()">` : ''}
         <span class="card__play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
       </div>
       <div class="card__body">
@@ -122,8 +125,7 @@ function buildGrid(){
 
   $$('.card', grid).forEach(card => {
     const l = state.loaders.find(x => x.id === card.dataset.id);
-    const go = e => { if (e.target.closest('.card__src')) return; open(l); };
-    card.addEventListener('click', go);
+    card.addEventListener('click', e => { if (e.target.closest('.card__src')) return; open(l); });
     card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(l); } });
   });
 }
@@ -157,14 +159,46 @@ function closeViewer(){
 }
 
 /* ============================================================
-   MANUAL LOAD
+   VIEW SWITCHING (island)
    ============================================================ */
-function manualLoad(){
-  const raw = $('#manual').value.trim();
+function setView(v){
+  state.view = v;
+  const lib = v === 'library';
+  $('#libraryView').hidden = !lib;
+  $('#htmlView').hidden = lib;
+  $$('.island__tab').forEach(t => t.classList.toggle('is-active', t.dataset.view === v));
+  $('#islandPill').style.transform = `translateX(${lib ? 0 : 122}px)`;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ============================================================
+   BRING YOUR OWN  (file + github)
+   ============================================================ */
+function loadWithSpinner(obj){
+  const lf = $('#loadingFile');
+  lf.hidden = false;
+  setTimeout(() => { lf.hidden = true; open(obj); }, 850);
+}
+function handleFile(file){
+  if (!file) return;
+  const ok = /\.(html?|svg)$/i.test(file.name) || /html|svg/.test(file.type);
+  if (!ok){ toast('only .html and .svg files', 'warn'); return; }
+  const type = /\.svg$/i.test(file.name) || /svg/.test(file.type) ? 'svg' : 'html';
+  const mime = type === 'svg' ? 'image/svg+xml' : 'text/html';
+  const reader = new FileReader();
+  reader.onload = () => {
+    const url = URL.createObjectURL(new Blob([reader.result], { type: mime }));
+    loadWithSpinner({ name: file.name, version: '', url });
+  };
+  reader.onerror = () => toast('could not read that file', 'warn');
+  reader.readAsText(file);
+}
+function ghLoad(){
+  const raw = $('#ghInput').value.trim();
   if (!raw) return;
   const url = resolveLoad(raw);
-  open({ name: labelFor(raw, url), version: '', url });
-  $('#manual').value = '';
+  loadWithSpinner({ name: labelFor(raw, url), version: '', url });
+  $('#ghInput').value = '';
 }
 function resolveLoad(v){
   if (/^https?:\/\//i.test(v)){
@@ -186,8 +220,7 @@ function repoToUrl(owner, repo){
 }
 function labelFor(raw, url){
   const m = raw.match(/^([\w.-]+)\/([\w.-]+)$/);
-  if (m) return m[2];
-  return hostOf(url);
+  return m ? m[2] : hostOf(url);
 }
 
 /* ============================================================
@@ -195,11 +228,9 @@ function labelFor(raw, url){
    ============================================================ */
 let edTimer = null;
 function openEditor(){
-  const ed = $('#editor');
-  ed.hidden = false;
-  const saved = (() => { try { return localStorage.getItem('jr:scratch') || ''; } catch { return ''; } })();
+  $('#editor').hidden = false;
   const code = $('#edCode');
-  if (!code.value) code.value = saved;
+  if (!code.value){ try { code.value = localStorage.getItem('jr:scratch') || ''; } catch {} }
   renderScratch();
   setTimeout(() => code.focus(), 60);
 }
@@ -210,9 +241,8 @@ function renderScratch(){
   $('#edPreview').srcdoc = code;
 }
 function scratchToViewer(){
-  const code = $('#edCode').value;
-  const blob = new Blob([code], { type: 'text/html' });
-  open({ name: 'scratch', version: '', url: URL.createObjectURL(blob) });
+  const url = URL.createObjectURL(new Blob([$('#edCode').value], { type: 'text/html' }));
+  open({ name: 'scratch', version: '', url });
 }
 
 /* ============================================================
@@ -220,21 +250,32 @@ function scratchToViewer(){
    ============================================================ */
 function wire(){
   $('#search').addEventListener('input', e => { state.query = e.target.value; buildGrid(); });
-
-  $('#brandHome').addEventListener('click', () => { state.query = ''; $('#search').value = ''; buildGrid(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+  $('#brandHome').addEventListener('click', () => { setView('library'); state.query = ''; $('#search').value = ''; buildGrid(); });
 
   $('#heroPrev').addEventListener('click', () => goHero(state.heroIdx - 1, true));
   $('#heroNext').addEventListener('click', () => goHero(state.heroIdx + 1, true));
 
-  $('#manualBtn').addEventListener('click', manualLoad);
-  $('#manual').addEventListener('keydown', e => { if (e.key === 'Enter') manualLoad(); });
+  // island
+  $$('.island__tab').forEach(t => t.addEventListener('click', () => setView(t.dataset.view)));
 
+  // bring your own
+  const drop = $('#drop'), fileInput = $('#fileInput');
+  drop.addEventListener('click', () => fileInput.click());
+  drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
+  fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); e.target.value = ''; });
+  ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('drag'); }));
+  ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); if (ev === 'drop' || !drop.contains(e.relatedTarget)) drop.classList.remove('drag'); }));
+  drop.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) handleFile(f); });
+  $('#ghBtn').addEventListener('click', ghLoad);
+  $('#ghInput').addEventListener('keydown', e => { if (e.key === 'Enter') ghLoad(); });
+
+  // viewer
   $('#vBack').addEventListener('click', closeViewer);
   $('#vReload').addEventListener('click', () => { if ($('#viewer')._url) loadFrame($('#viewer')._url); });
   $('#vNew').addEventListener('click', () => { if ($('#viewer')._url) window.open($('#viewer')._url, '_blank', 'noopener'); });
   $('#vFull').addEventListener('click', () => { const f = $('#frame'); (f.requestFullscreen || f.webkitRequestFullscreen || (()=>{})).call(f); });
 
-  // hidden editor: the faint dot in the footer, or ctrl/cmd + e
+  // hidden editor (corner dot + ctrl/cmd + e)
   $('#editorTrigger').addEventListener('click', openEditor);
   $('#edRun').addEventListener('click', renderScratch);
   $('#edClose').addEventListener('click', closeEditor);
@@ -249,7 +290,7 @@ function wire(){
       if (!$('#viewer').hidden){ closeViewer(); return; }
     }
     if (e.key === '/' && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName) && $('#viewer').hidden && $('#editor').hidden){
-      e.preventDefault(); $('#search').focus();
+      e.preventDefault(); setView('library'); $('#search').focus();
     }
   });
 }
@@ -259,7 +300,7 @@ function toast(msg, kind){
   el.className = 'toast' + (kind ? ' toast--' + kind : '');
   el.textContent = msg;
   $('#toasts').appendChild(el);
-  setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 250); }, 3200);
+  setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 250); }, 3000);
 }
 
 /* ============================================================

@@ -1,5 +1,5 @@
 {
-  "note": "The loader library for HTML JR. Add an entry and it shows up on the floor. Fields: id, name, version, tag, url (what actually loads in the frame), source (the github/home link shown under it), accent (hex used for the card + hero panel), featured (bool, puts it in the rotating hero), blurb (one short line).",
+  "note": "The library for HTML JR. Add an entry and it shows up. Fields: id, name, version, tag, url (what loads in the frame), source (github/home link), accent (hex for card + hero), logo (optional image url, falls back to the first letter), featured (bool, puts it in the rotating hero), blurb (one short line).",
   "loaders": [
     {
       "id": "t9os",
@@ -8,9 +8,21 @@
       "tag": "desktop os",
       "url": "https://t9os.space/",
       "source": "https://github.com/t9lat22/t9lat22.github.io",
+      "logo": "https://cdn.jsdelivr.net/gh/t9lat22/t9lat22.github.io@master/Logo22.png",
       "accent": "#5b8cff",
       "featured": true,
       "blurb": "a whole fake desktop with games and apps built in"
+    },
+    {
+      "id": "cine-os",
+      "name": "Cine OS",
+      "version": "V2",
+      "tag": "desktop os",
+      "url": "https://cdn.jsdelivr.net/gh/nathanpikelny6-oss/CineOS@main/index.html",
+      "source": "https://github.com/nathanpikelny6-oss/CineOS",
+      "accent": "#16c2a3",
+      "featured": true,
+      "blurb": "cinematic desktop with a boot sequence and app dock"
     },
     {
       "id": "gn-math",
@@ -19,6 +31,7 @@
       "tag": "games",
       "url": "https://cdn.jsdelivr.net/gh/genizymath/gnnew@main/index.html",
       "source": "https://github.com/genizymath/gnnew",
+      "logo": "https://cdn.jsdelivr.net/gh/genizymath/gnnew@main/favicon.png",
       "accent": "#fc2651",
       "featured": true,
       "blurb": "big grid of unblocked games, loads fast"
@@ -30,9 +43,32 @@
       "tag": "proxy",
       "url": "https://cdn.jsdelivr.net/gh/x8rr/cherri-v2-leak@main/public/index.html",
       "source": "https://github.com/x8rr/cherri-v2-leak",
+      "logo": "https://cdn.jsdelivr.net/gh/x8rr/cherri-v2-leak@main/public/assets/img/fav.png",
       "accent": "#c9184a",
       "featured": true,
       "blurb": "leaked build of the cherri proxy"
+    },
+    {
+      "id": "discord",
+      "name": "Discord",
+      "version": "",
+      "tag": "chat",
+      "url": "library/discord.html",
+      "source": "",
+      "accent": "#5865f2",
+      "featured": false,
+      "blurb": "the discord landing page, saved and ready to open"
+    },
+    {
+      "id": "google-classroom",
+      "name": "Google Classroom",
+      "version": "",
+      "tag": "video",
+      "url": "library/google-classroom.html",
+      "source": "",
+      "accent": "#2e7d32",
+      "featured": false,
+      "blurb": "search and watch, tucked behind a classroom tab"
     }
   ]
 }
