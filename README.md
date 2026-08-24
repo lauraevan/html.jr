@@ -1,101 +1,86 @@
 # HTML JR
 
-**An underground loader for `.html` and `.svg` files.**
-Load anything into a live iframe with full execution support — browse the
-preloaded library, import any GitHub repo, or paste a raw URL. Pure
-client-side, no build step, deploys straight off GitHub via githack.
+Pick a loader and it opens. That is the whole idea.
 
-```
-  ┌─ HTML JR ──────────────────────────────────────────┐
-  │  the floor is open · load at your own risk          │
-  └─────────────────────────────────────────────────────┘
-```
+A rounded, no-nonsense hub for UBGs. There is a rotating hero up top for the
+popular ones, a grid of everything else, and a box where you can paste any link
+and hit load. Pure client side, no build step, runs straight off githack.
 
-## What it does
+## What is in it
 
-- **Loads `.html` and `.svg` into a real iframe** — scripts, canvas, audio,
-  pointer events all run live (this is not a static preview).
-- **The floor** — a marketplace-style grid of preloaded listings from
-  `library.json`, with search, type filters, favorites, and recents.
-- **GitHub import** — type `owner/repo` (or paste a repo / blob / raw URL) and
-  it lists every loadable `.html` / `.svg` in the repo. Click one to run it.
-- **Local files** — drag a file anywhere on the page, or hit `⬆ file`.
-- **Safe mode** — a shield toggle in the viewer re-sandboxes the iframe when
-  you want to open something you don't trust.
+- **A rotating hero** of the popular loaders (auto advances, arrows and dots to
+  move around, pauses when you hover).
+- **A grid of loaders** with search. Each card has a name, version, a tag and a
+  link back to its source.
+- **Paste any link and load it.** A full URL loads directly. `owner/repo` and
+  github links get pointed at a servable version automatically.
+- **A hidden scratch editor** for quick html. Press `Ctrl` + `E` (or `Cmd` + `E`),
+  or tap the faint dot in the footer. Write on the left, watch it render on the
+  right, and "open full" throws it into the big viewer. Your text sticks around
+  in the browser.
 
-## How loading works
+## The loaders right now
 
-GitHub's `raw.githubusercontent.com` serves HTML as `text/plain` (so it won't
-render), and `github.com/.../blob/...` is a web page, not the file. HTML JR
-rewrites both to **`raw.githack.com`**, which serves the file with the correct
-MIME type *and* keeps relative asset paths working — so a repo's HTML loads
-with its CSS/JS/images intact. Local uploads load via `Blob` URLs.
+| name       | version | loads                                            | source |
+| ---------- | ------- | ------------------------------------------------ | ------ |
+| T9OS       | V.097   | `https://t9os.space/`                            | t9lat22/t9lat22.github.io |
+| gn-math    |         | jsDelivr build of the repo                       | genizymath/gnnew |
+| Cherri     | V2      | jsDelivr build of the repo (best effort)         | x8rr/cherri-v2-leak |
 
-| you paste…                                   | it loads via                         |
-| -------------------------------------------- | ------------------------------------ |
-| `library/foo.html` (repo-relative)           | direct                               |
-| `owner/repo`                                 | GitHub API → file browser → githack  |
-| `github.com/o/r/blob/main/x.html`            | `raw.githack.com/o/r/main/x.html`    |
-| `raw.githubusercontent.com/o/r/main/x.html`  | `raw.githack.com/o/r/main/x.html`    |
-| any other `https://…/x.html` or `.svg`       | direct                               |
-| a dropped/uploaded file                       | `blob:` URL                          |
+Notes on how each one is pointed:
 
-## Adding to the library
+- **T9OS** ships with a custom domain (`t9os.space`), so it loads the live site.
+  Root relative paths and its sub games all resolve there.
+- **gn-math** sets `<base href="https://cdn.jsdelivr.net/gh/genizymath/gnnew@main/">`
+  inside its own page, so loading it from jsDelivr is self contained and its
+  assets resolve on their own.
+- **Cherri** is a leaked source build of a proxy app that normally needs its own
+  server (its old host, axisleak.app, is down). It is wired to the repo build as
+  a best effort, so it may not fully run as a plain static page. If you have a
+  working mirror URL, drop it in and it will load cleanly.
 
-Drop your files in `library/` and add an entry to **`library.json`**:
+## Adding a loader
+
+Open **`loaders.json`** and add an entry:
 
 ```json
 {
-  "id": "my-thing",
-  "title": "MY THING",
-  "type": "html",
-  "src": "library/my-thing.html",
-  "seller": "you",
-  "price": "0.00Ξ",
-  "rating": 4.8,
+  "id": "example",
+  "name": "Example",
+  "version": "V1",
+  "tag": "games",
+  "url": "https://example.com/",
+  "source": "https://github.com/user/repo",
+  "accent": "#7b6cff",
   "featured": true,
-  "tags": ["canvas", "fx"],
-  "desc": "one-line pitch shown on the card"
+  "blurb": "one short line for the card"
 }
 ```
 
-`src` can be a repo-relative path **or** any URL (GitHub blob/raw links are
-auto-rewritten to githack). `type` is `html` or `svg`. `thumb` (optional) can
-point to an image; otherwise HTML listings get a live scaled preview and SVGs
-render themselves. Only `title`, `type`, and `src` are required — the rest have
-sensible defaults.
+Only `name` and `url` really matter. `featured` puts it in the rotating hero.
+`accent` colors its card and hero panel. `url` is whatever should actually load
+in the frame, so use a live domain, a jsDelivr build, or a githack link.
 
-The five bundled listings (`neon-rain`, `synth-grid`, `terminal`, `orb`,
-`paint`) double as a smoke test and as templates for your own entries.
+### Pointing a github repo at something loadable
 
-## Deploy (githack)
+- `user.github.io` style repos load their live domain.
+- other repos default to their jsDelivr build (`cdn.jsdelivr.net/gh/user/repo/index.html`),
+  which works for pages built with relative or jsDelivr based paths.
+- github `blob` and `raw` links get rewritten to `raw.githack.com` so the html
+  actually renders with its assets.
 
-githack serves files straight from GitHub — pushing **is** deploying.
+## Deploy
 
-- **Live/dev (this branch):**
-  `https://raw.githack.com/lauraevan/html.jr/claude/html-jr-loader-uqxg5j/index.html`
-- **Production (after merge to the default branch):**
-  `https://raw.githack.com/lauraevan/html.jr/<default-branch>/index.html`
+githack serves the repo straight from github, so pushing is deploying.
 
-> `raw.githack.com` = CDN-cached, meant for production. `raw.githubusercontent`
-> paths won't render HTML; always use the githack host for the app URL.
-
-## Hidden bits
-
-- `/` focuses the loader. `Esc` closes the viewer.
-- In the loader input: `token: <github_pat>` stores a token locally (raises the
-  GitHub API rate limit for private/large repos); `token clear` removes it. The
-  token never leaves your browser.
-- The bundled `JR://TERMINAL` listing is a live toy shell — try `help`.
+- this branch: `https://raw.githack.com/lauraevan/html.jr/claude/html-jr-loader-uqxg5j/index.html`
+- after merge: `https://raw.githack.com/lauraevan/html.jr/<default-branch>/index.html`
 
 ## Files
 
 ```
-index.html      structure
-styles.css      the whole aesthetic
-app.js          loader logic (library, github, viewer, filters)
-library.json    the marketplace manifest — edit this to add listings
-library/        the preloaded .html / .svg files
+index.html     the page
+styles.css     the look
+app.js         the logic (hero, grid, loader, viewer, scratch editor)
+loaders.json   the list of loaders, edit this to add more
 ```
-
-No dependencies, no bundler. Open `index.html` over http (or githack) and go.

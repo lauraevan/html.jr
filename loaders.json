@@ -1,0 +1,38 @@
+{
+  "note": "The loader library for HTML JR. Add an entry and it shows up on the floor. Fields: id, name, version, tag, url (what actually loads in the frame), source (the github/home link shown under it), accent (hex used for the card + hero panel), featured (bool, puts it in the rotating hero), blurb (one short line).",
+  "loaders": [
+    {
+      "id": "t9os",
+      "name": "T9OS",
+      "version": "V.097",
+      "tag": "desktop os",
+      "url": "https://t9os.space/",
+      "source": "https://github.com/t9lat22/t9lat22.github.io",
+      "accent": "#5b8cff",
+      "featured": true,
+      "blurb": "a whole fake desktop with games and apps built in"
+    },
+    {
+      "id": "gn-math",
+      "name": "gn-math",
+      "version": "",
+      "tag": "games",
+      "url": "https://cdn.jsdelivr.net/gh/genizymath/gnnew@main/index.html",
+      "source": "https://github.com/genizymath/gnnew",
+      "accent": "#fc2651",
+      "featured": true,
+      "blurb": "big grid of unblocked games, loads fast"
+    },
+    {
+      "id": "cherri",
+      "name": "Cherri",
+      "version": "V2",
+      "tag": "proxy",
+      "url": "https://cdn.jsdelivr.net/gh/x8rr/cherri-v2-leak@main/public/index.html",
+      "source": "https://github.com/x8rr/cherri-v2-leak",
+      "accent": "#c9184a",
+      "featured": true,
+      "blurb": "leaked build of the cherri proxy"
+    }
+  ]
+}
