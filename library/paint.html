@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PAINTBOX</title>
+<style>
+  html,body{margin:0;height:100%;background:#0b0b10;overflow:hidden;font-family:ui-monospace,monospace;}
+  canvas{display:block;cursor:crosshair;touch-action:none;}
+  .bar{position:fixed;left:12px;top:12px;display:flex;gap:8px;align-items:center;
+    background:#14141ccc;border:1px solid #2a2a34;border-radius:4px;padding:8px 10px;backdrop-filter:blur(4px);}
+  .sw{width:20px;height:20px;border-radius:3px;border:1px solid #333;cursor:pointer;}
+  .sw.on{outline:2px solid #fff;}
+  input[type=range]{accent-color:#3dfc7f;}
+  button{background:#1b1b22;color:#d6d6de;border:1px solid #2a2a34;border-radius:3px;padding:5px 9px;font:inherit;cursor:pointer;}
+  .hint{position:fixed;right:12px;bottom:12px;color:#55555f;font-size:12px;letter-spacing:.2em;}
+</style>
+</head>
+<body>
+<div class="bar" id="bar"></div>
+<canvas id="c"></canvas>
+<div class="hint">DRAG TO PAINT // anon</div>
+<script>
+  const c=document.getElementById('c'), x=c.getContext('2d');
+  function fit(){ const d=window.devicePixelRatio||1; c.width=innerWidth*d; c.height=innerHeight*d; x.scale(d,d); x.lineCap='round'; x.lineJoin='round'; }
+  fit();
+  let color='#3dfc7f', size=6, drawing=false, last=null;
+  const colors=['#3dfc7f','#ff2d70','#35e5e5','#ffb020','#ffffff'];
+  const bar=document.getElementById('bar');
+  colors.forEach((col,i)=>{ const s=document.createElement('div'); s.className='sw'+(i===0?' on':''); s.style.background=col;
+    s.onclick=()=>{ color=col; [...bar.querySelectorAll('.sw')].forEach(e=>e.classList.remove('on')); s.classList.add('on'); };
+    bar.appendChild(s); });
+  const r=document.createElement('input'); r.type='range'; r.min=1; r.max=40; r.value=size; r.oninput=()=>size=+r.value; bar.appendChild(r);
+  const clr=document.createElement('button'); clr.textContent='clear'; clr.onclick=()=>x.clearRect(0,0,c.width,c.height); bar.appendChild(clr);
+  const pos=e=>({x:e.clientX,y:e.clientY});
+  c.addEventListener('pointerdown',e=>{drawing=true;last=pos(e);dot(last);});
+  c.addEventListener('pointermove',e=>{ if(!drawing)return; const p=pos(e);
+    x.strokeStyle=color; x.lineWidth=size; x.beginPath(); x.moveTo(last.x,last.y); x.lineTo(p.x,p.y); x.stroke(); last=p; });
+  addEventListener('pointerup',()=>drawing=false);
+  function dot(p){ x.fillStyle=color; x.beginPath(); x.arc(p.x,p.y,size/2,0,7); x.fill(); }
+</script>
+</body>
+</html>

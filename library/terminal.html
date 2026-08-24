@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JR://TERMINAL</title>
+<style>
+  html,body{margin:0;height:100%;background:#04060a;color:#3dfc7f;
+    font-family:ui-monospace,'JetBrains Mono',monospace;font-size:14px;}
+  #scr{padding:16px;height:100%;overflow:auto;box-sizing:border-box;
+    text-shadow:0 0 6px rgba(61,252,127,.3);}
+  .row{display:flex;gap:8px;}
+  .ps1{color:#ff2d70;}
+  .in{background:transparent;border:0;outline:0;color:#eafff3;font:inherit;flex:1;caret-color:#3dfc7f;}
+  .mut{color:#4a6a55;} .warn{color:#ffb020;} b{color:#eafff3;}
+  a{color:#35e5e5;}
+</style>
+</head>
+<body>
+<div id="scr" onclick="document.getElementById('in').focus()">
+  <div>JR shell [v1.0] — connected to /dev/floor</div>
+  <div class="mut">type <b>help</b> for commands. this shell is a toy — but it's a live one.</div>
+  <div style="height:8px"></div>
+  <div class="row"><span class="ps1">jr@floor:~$</span><input id="in" class="in" autofocus spellcheck="false" autocomplete="off"></div>
+</div>
+<script>
+  const scr = document.getElementById('scr');
+  const inp = document.getElementById('in');
+  const print = (html, cls='') => {
+    const d = document.createElement('div'); if (cls) d.className = cls; d.innerHTML = html;
+    scr.insertBefore(d, inp.parentElement); scr.scrollTop = scr.scrollHeight;
+  };
+  const CMDS = {
+    help(){ return 'commands: <b>help who ls cat date echo whoami color clear sudo</b>'; },
+    who(){ return 'you are a guest on the floor. seller signatures unverified.'; },
+    whoami(){ return 'guest#' + (Math.random()*1e6|0).toString(36); },
+    ls(){ return '<span class="mut">neon-rain.html  synth-grid.html  orb.svg  paint.html  secrets/</span>'; },
+    cat(a){ return a[0]==='secrets/' || a[0]==='secrets' ? '<span class="warn">permission denied.</span>' : `cat: ${a[0]||'??'}: no such file`; },
+    date(){ return new Date().toString(); },
+    echo(a){ return a.join(' '); },
+    whoisjr(){ return 'HTML JR: loads anything, asks no questions.'; },
+    sudo(){ return '<span class="warn">nice try.</span>'; },
+    color(a){ const c=a[0]; if(!c) return 'usage: color #hex'; document.body.style.color=c; return 'ink → '+c; },
+    clear(){ [...scr.querySelectorAll('div')].forEach(d=>{ if(d!==inp.parentElement) d.remove(); }); return ''; },
+  };
+  inp.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const line = inp.value.trim(); inp.value='';
+    print(`<span class="ps1">jr@floor:~$</span> ${line.replace(/</g,'&lt;')}`);
+    if (!line) return;
+    const [cmd, ...args] = line.split(/\s+/);
+    const fn = CMDS[cmd.toLowerCase()];
+    const out = fn ? fn(args) : `<span class="warn">jr: command not found: ${cmd.replace(/</g,'&lt;')}</span>`;
+    if (out) print(out);
+  });
+</script>
+</body>
+</html>

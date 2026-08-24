@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NEON RAIN</title>
+<style>
+  html,body{margin:0;height:100%;background:#02030a;overflow:hidden;}
+  canvas{display:block;}
+  .tag{position:fixed;left:14px;bottom:12px;font:12px/1 ui-monospace,monospace;color:#2f7;
+    letter-spacing:.25em;text-shadow:0 0 8px #2f7;opacity:.7;}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="tag">NEON RAIN // ghost0x</div>
+<script>
+const c = document.getElementById('c'), x = c.getContext('2d');
+let cols, drops, W, H;
+const glyphs = 'アイウエオカキクケコサシスセソABCDEF0123456789#$%&<>/\\|=+*'.split('');
+function resize(){
+  W = c.width = innerWidth; H = c.height = innerHeight;
+  cols = Math.floor(W / 16);
+  drops = Array.from({length: cols}, () => Math.random() * -H);
+}
+addEventListener('resize', resize); resize();
+function frame(){
+  x.fillStyle = 'rgba(2,3,10,0.12)';
+  x.fillRect(0,0,W,H);
+  x.font = '15px ui-monospace, monospace';
+  for (let i=0;i<cols;i++){
+    const ch = glyphs[(Math.random()*glyphs.length)|0];
+    const px = i*16, py = drops[i];
+    x.fillStyle = '#bfffe0'; x.fillText(ch, px, py);            // bright head
+    x.fillStyle = 'rgba(40,255,140,0.85)'; x.fillText(ch, px, py-16);
+    drops[i] += 16;
+    if (drops[i] > H && Math.random() > 0.975) drops[i] = Math.random()*-200;
+  }
+  requestAnimationFrame(frame);
+}
+frame();
+</script>
+</body>
+</html>

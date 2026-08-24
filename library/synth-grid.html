@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SYNTH GRID</title>
+<style>
+  :root{--sun:#ff2d70;--grid:#7a2bff;}
+  html,body{margin:0;height:100%;overflow:hidden;background:#0a0020;
+    font-family:ui-monospace,monospace;}
+  .scene{position:absolute;inset:0;
+    background:linear-gradient(#160033 0%,#3a0a4a 45%,#ff2d70 46%,#0a0020 47%);
+    perspective:340px;perspective-origin:50% 40%;}
+  .sun{position:absolute;left:50%;top:31%;width:230px;height:230px;transform:translate(-50%,-50%);
+    border-radius:50%;background:radial-gradient(circle,#ffe36b,#ff7b3a 55%,#ff2d70 75%,transparent 78%);
+    filter:blur(.3px);box-shadow:0 0 90px #ff2d70aa;}
+  .sun::after{content:"";position:absolute;inset:0;border-radius:50%;
+    background:repeating-linear-gradient(#0a0020 0 6px,transparent 6px 16px);mask:radial-gradient(circle,#000 78%,transparent 78%);}
+  .grid{position:absolute;left:-50%;right:-50%;bottom:-10%;height:60%;
+    background-image:linear-gradient(var(--grid) 2px,transparent 2px),linear-gradient(90deg,var(--grid) 2px,transparent 2px);
+    background-size:44px 44px;transform:rotateX(74deg);transform-origin:50% 100%;
+    animation:roll 1.1s linear infinite;box-shadow:0 0 40px #7a2bff88;}
+  @keyframes roll{to{background-position:0 44px;}}
+  .ttl{position:absolute;left:0;right:0;top:38%;text-align:center;color:#fff;
+    font-weight:800;font-size:min(11vw,86px);letter-spacing:.14em;
+    text-shadow:0 0 6px #ff2d70,4px 4px 0 #7a2bff;transition:transform .15s ease-out;}
+  .sub{position:absolute;left:0;right:0;bottom:14px;text-align:center;color:#ffd6e7;font-size:12px;letter-spacing:.3em;opacity:.75;}
+</style>
+</head>
+<body>
+<div class="scene" id="scene">
+  <div class="sun"></div>
+  <div class="grid"></div>
+  <h1 class="ttl" id="ttl">SYNTH·GRID</h1>
+  <div class="sub">move your cursor // v0id</div>
+</div>
+<script>
+  const ttl = document.getElementById('ttl');
+  addEventListener('pointermove', e => {
+    const dx = (e.clientX / innerWidth - .5) * 30;
+    const dy = (e.clientY / innerHeight - .5) * 14;
+    ttl.style.transform = `translate(${dx}px,${dy}px)`;
+  });
+</script>
+</body>
+</html>

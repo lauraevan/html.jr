@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="HTML JR — an underground loader for .html and .svg files. Load anything into a live iframe with full execution support. Browse the library, import GitHub repos, load raw URLs." />
+  <meta name="theme-color" content="#050506" />
+  <title>HTML JR // underground loader</title>
+
+  <!-- Fonts: enhancement only. Everything degrades to system monospace. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Syncopate:wght@700&family=VT323&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23050506'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='18' font-weight='800' fill='%233dfc7f' text-anchor='middle'%3EJR%3C/text%3E%3C/svg%3E" />
+</head>
+<body>
+
+  <!-- ============ BOOT SEQUENCE ============ -->
+  <div id="boot" class="boot" aria-hidden="true">
+    <div class="boot__inner">
+      <pre id="bootLog" class="boot__log"></pre>
+      <div class="boot__skip">[ press any key to skip ]</div>
+    </div>
+  </div>
+
+  <!-- ============ AMBIENT FX LAYERS ============ -->
+  <div class="fx-grid" aria-hidden="true"></div>
+  <div class="fx-scanlines" aria-hidden="true"></div>
+  <div class="fx-vignette" aria-hidden="true"></div>
+
+  <!-- ============ TICKER ============ -->
+  <div class="ticker" role="status" aria-label="marketplace status">
+    <div class="ticker__track" id="tickerTrack"></div>
+  </div>
+
+  <!-- ============ HEADER ============ -->
+  <header class="topbar">
+    <div class="topbar__brand" id="brandHome" title="return to floor" role="button" tabindex="0">
+      <span class="glitch" data-text="HTML JR">HTML JR</span>
+      <span class="topbar__sub">underground loader</span>
+    </div>
+
+    <nav class="topbar__nav" id="filterTabs" aria-label="filters">
+      <button class="tab is-active" data-filter="all">all</button>
+      <button class="tab" data-filter="html">.html</button>
+      <button class="tab" data-filter="svg">.svg</button>
+      <button class="tab" data-filter="fav">★ saved</button>
+      <button class="tab" data-filter="recent">recent</button>
+    </nav>
+
+    <div class="topbar__meta">
+      <span class="dot dot--live"></span>
+      <span id="connStatus" class="mono-sm">NODE: LIVE</span>
+      <span class="sep">/</span>
+      <span id="countStatus" class="mono-sm">0 listings</span>
+    </div>
+  </header>
+
+  <!-- ============ LOADER BAR (the omni-input) ============ -->
+  <section class="loader" aria-label="load anything">
+    <div class="loader__row">
+      <div class="loader__prompt">jr&nbsp;<span class="blink">▮</span></div>
+      <input
+        id="omniInput"
+        class="loader__input"
+        type="text"
+        spellcheck="false"
+        autocomplete="off"
+        placeholder="paste a url · github repo (owner/repo) · a .html / .svg link — or drop a file" />
+      <button id="uploadBtn" class="btn btn--ghost" title="load a local file">⬆ file</button>
+      <button id="loadBtn" class="btn btn--go">load ▸</button>
+      <input id="fileInput" type="file" accept=".html,.htm,.svg,image/svg+xml,text/html" hidden />
+    </div>
+    <div class="loader__hint" id="loaderHint">
+      tip: try <code>owner/repo</code> to browse a github repo, or paste any <code>raw.githubusercontent</code> / blob link.
+    </div>
+  </section>
+
+  <!-- ============ REPO BROWSER (hidden until a repo is imported) ============ -->
+  <section id="repoPanel" class="repo hidden" aria-label="repository browser">
+    <div class="repo__head">
+      <div class="repo__title">
+        <span class="repo__icon">◈</span>
+        <span id="repoName">owner/repo</span>
+        <span id="repoBranch" class="tag">main</span>
+      </div>
+      <div class="repo__tools">
+        <input id="repoFilter" class="repo__filter" type="text" placeholder="filter files…" spellcheck="false" />
+        <button id="repoClose" class="btn btn--ghost">close ✕</button>
+      </div>
+    </div>
+    <div id="repoList" class="repo__list"></div>
+  </section>
+
+  <!-- ============ MARKETPLACE FLOOR ============ -->
+  <main class="floor" aria-label="marketplace floor">
+    <div class="floor__head">
+      <h2 id="floorTitle" class="floor__title">// the floor</h2>
+      <div class="floor__search">
+        <span class="floor__searchicon">⌕</span>
+        <input id="searchInput" type="text" placeholder="search listings…" spellcheck="false" />
+      </div>
+    </div>
+    <div id="grid" class="grid"></div>
+    <div id="emptyState" class="empty hidden">
+      <div class="empty__mark">∅</div>
+      <div class="empty__text">no listings match. the floor is quiet.</div>
+    </div>
+  </main>
+
+  <footer class="botbar">
+    <span>HTML JR</span>
+    <span class="sep">/</span>
+    <span>unregulated zone — load at your own risk</span>
+    <span class="sep">/</span>
+    <span id="modeStatus">safe-mode: OFF</span>
+  </footer>
+
+  <!-- ============ VIEWER ============ -->
+  <div id="viewer" class="viewer hidden" role="dialog" aria-modal="true" aria-label="loaded content viewer">
+    <div class="viewer__chrome">
+      <div class="viewer__id">
+        <span class="viewer__lights"><i></i><i></i><i></i></span>
+        <span id="viewerType" class="tag">HTML</span>
+        <span id="viewerTitle" class="viewer__title">untitled</span>
+      </div>
+      <div class="viewer__src" id="viewerSrc" title="source">—</div>
+      <div class="viewer__controls">
+        <button id="vSafe" class="btn btn--ghost" title="toggle sandbox (safe mode)">shield: off</button>
+        <button id="vReload" class="btn btn--ghost" title="reload">⟳</button>
+        <button id="vSource" class="btn btn--ghost" title="view source">&lt;/&gt;</button>
+        <button id="vNew" class="btn btn--ghost" title="open in new tab">↗</button>
+        <button id="vFav" class="btn btn--ghost" title="save to floor">★</button>
+        <button id="vClose" class="btn btn--danger" title="close (esc)">✕</button>
+      </div>
+    </div>
+    <div class="viewer__stage">
+      <div id="viewerLoading" class="viewer__loading">
+        <div class="spinner"></div>
+        <span>establishing link…</span>
+      </div>
+      <iframe id="frame" class="viewer__frame" title="loaded content"
+        allow="accelerometer; autoplay; camera; encrypted-media; fullscreen; gyroscope; microphone; midi; clipboard-write; xr-spatial-tracking"
+        allowfullscreen></iframe>
+      <pre id="sourceView" class="viewer__source hidden"></pre>
+    </div>
+  </div>
+
+  <!-- ============ TOASTS ============ -->
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
