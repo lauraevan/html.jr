@@ -1,51 +1,51 @@
 # HTML JR
 
-Pick a loader and it opens. That is the whole idea.
+Pick a loader and it opens in a new tab. That is the whole idea.
 
-A rounded hub for UBGs. A rotating hero up top for the popular ones, a grid of
-everything else, and a floating island at the bottom that flips between the
-library and a page where you bring your own html. Pure client side, no build
-step, runs straight off githack.
+Flat, no build step, runs straight off githack.
 
 ## Getting around
 
 - **The floating island** at the bottom has two tabs.
-  - **Library** is the hero plus the grid of loaders, with search.
-  - **HTML** is where you bring your own. Drop a `.html` or `.svg`, or paste a
-    github link. It shows a quick "loading file" and then opens it.
-- **The hero** cycles the popular loaders. It auto advances, has arrows and
-  dots, and pauses when you hover.
-- **Every card** shows a name, version, tag, the real logo where the project
-  ships one, and a link back to its source.
-- **A hidden scratch editor.** Press `Ctrl` + `E` (or `Cmd` + `E`), or tap the
-  faint dot in the bottom right corner. Write html on the left, watch it render
-  on the right, and "open full" throws it into the big viewer. Your text sticks
-  around in the browser.
+  - **Library** is the hero plus the grid.
+  - **HTML** is where you bring your own: drop a `.html` or `.svg`, or paste a
+    link. It shows a quick "loading file" and then opens it in a new tab.
+- **Clicking a loader opens it in a new tab.** The hero has an Open button, the
+  cards open on click.
+- **The hero** cycles the featured loaders. It auto advances, has arrows and
+  dots, and pauses on hover.
+- **Hidden scratch editor:** press `Ctrl` + `E` (or `Cmd` + `E`), or tap the
+  faint dot in the bottom right corner. Write html on the left, see it on the
+  right, "open" throws it into a new tab. Your text is kept in the browser.
 
-## The loaders right now
+## How loading works
 
-| name             | version | loads                                       | source |
-| ---------------- | ------- | ------------------------------------------- | ------ |
-| T9OS             | V.097   | `https://t9os.space/`                       | t9lat22/t9lat22.github.io |
-| Cine OS          | V2      | jsDelivr build of the repo                  | nathanpikelny6-oss/CineOS |
-| gn-math          |         | jsDelivr build of the repo                  | genizymath/gnnew |
-| Cherri           | V2      | jsDelivr build of the repo (best effort)    | x8rr/cherri-v2-leak |
-| Discord          |         | `library/discord.html`                      | saved page |
-| Google Classroom |         | `library/google-classroom.html`            | provided file |
+The frame is opened in a new tab, so the target site renders as itself.
 
-How each github one is pointed:
+- `raw.githubusercontent.com` and jsDelivr both serve `.html` as plain text, so
+  a page loaded from them shows the code instead of rendering. **githack**
+  (`raw.githack.com`) serves the real `text/html`, so repos are pointed there.
+- Sites with their own domain (like T9OS) load that domain directly.
+- Uploaded files open through a `blob:` url.
 
-- **T9OS** ships a custom domain (`t9os.space`), so it loads the live site and
-  all its sub games resolve.
-- **Cine OS** uses relative asset paths, so its jsDelivr build loads clean.
-- **gn-math** sets a jsDelivr base href inside its own page, so loading it from
-  jsDelivr is self contained.
-- **Cherri** is a leaked source build of a proxy app that normally needs its own
-  server (its old host is down), so it is a best effort static load. Give me a
-  working mirror url and I will point the card straight at it.
+## The loaders
 
-Logos come from each project's own repo over jsDelivr. If a logo cannot load,
-the card quietly falls back to the first letter.
+| name             | version | opens                                                  |
+| ---------------- | ------- | ------------------------------------------------------ |
+| T9OS             | V.097   | `https://t9os.space/`                                  |
+| Cine OS          | V2      | githack build of nathanpikelny6-oss/CineOS             |
+| gn-math          |         | githack build of genizymath/gnnew                      |
+| Cherri           | V2      | githack build of x8rr/cherri-v2-leak (best effort)     |
+| Noah's Tutoring  |         | githack build of NoahsAmazingTutoringHelp/...          |
+| Discord          |         | `library/discord.html`                                 |
+| Google Classroom |         | `library/google-classroom.html`                        |
+
+Logos come from each project's own repo. If a logo cannot load, the card shows
+the first letter instead.
+
+Cherri is a leaked source build of a proxy that normally needs its own server
+(its old host is down), so it is a best effort load. Point it at a working
+mirror and it opens clean.
 
 ## Adding a loader
 
@@ -57,31 +57,22 @@ Open **`loaders.json`** and add an entry:
   "name": "Example",
   "version": "V1",
   "tag": "games",
-  "url": "https://example.com/",
+  "url": "https://raw.githack.com/user/repo/main/index.html",
   "source": "https://github.com/user/repo",
   "logo": "https://cdn.jsdelivr.net/gh/user/repo@main/logo.png",
   "accent": "#7b6cff",
-  "featured": true,
-  "blurb": "one short line for the card"
+  "featured": true
 }
 ```
 
-Only `name` and `url` really matter. `featured` puts it in the rotating hero.
-`accent` colors its card and hero panel. `logo` is optional. `url` is whatever
-should load in the frame: a live domain, a jsDelivr build, a githack link, or a
-repo relative path like `library/thing.html`.
-
-For local files, drop them in `library/` and point `url` at them.
-
-### Pointing a github repo at something loadable
-
-- `user.github.io` repos load their live domain.
-- other repos default to their jsDelivr build (`cdn.jsdelivr.net/gh/user/repo/index.html`).
-- github `blob` and `raw` links get rewritten to `raw.githack.com`.
+Only `name` and `url` are required. `featured` puts it in the hero. `url` is
+what opens in the new tab, so use a live domain, a githack build, or a repo
+relative path like `library/thing.html`. Put local files in `library/`.
 
 ## Deploy
 
-githack serves the repo straight from github, so pushing is deploying.
+githack serves the repo straight from github, so pushing is deploying. githack
+caches for a bit, so a hard refresh helps after a new push.
 
 - this branch: `https://raw.githack.com/lauraevan/html.jr/claude/html-jr-loader-uqxg5j/index.html`
 - after merge: `https://raw.githack.com/lauraevan/html.jr/<default-branch>/index.html`
@@ -90,8 +81,8 @@ githack serves the repo straight from github, so pushing is deploying.
 
 ```
 index.html      the page
-styles.css      the look
-app.js          the logic (hero, grid, island, viewer, bring your own, editor)
-loaders.json    the list of loaders, edit this to add more
-library/        local .html and .svg files that get loaded
+styles.css      the look (flat, no gradients)
+app.js          the logic (hero, grid, island, bring your own, editor)
+loaders.json    the list of loaders
+library/        local .html and .svg files
 ```

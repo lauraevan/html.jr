@@ -1,82 +1,69 @@
 /* ============================================================
    HTML JR  ::  app.js
-   pick a loader and it opens. bring your own and it opens.
+   pick a loader and it opens in a new tab.
    ============================================================ */
 'use strict';
 
 const $  = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
-const state = {
-  loaders: [],
-  hero: [],
-  heroIdx: 0,
-  heroTimer: null,
-  query: '',
-  view: 'library',
-};
+const state = { loaders: [], hero: [], heroIdx: 0, heroTimer: null, query: '', view: 'library' };
 
-/* ---------- helpers ---------- */
-function shade(hex, amt){
-  const n = parseInt((hex || '#7b6cff').replace('#',''), 16);
-  let r = (n >> 16) + amt, g = ((n >> 8) & 255) + amt, b = (n & 255) + amt;
-  r = Math.max(0, Math.min(255, r)); g = Math.max(0, Math.min(255, g)); b = Math.max(0, Math.min(255, b));
-  return '#' + (0x1000000 + (r << 16) + (g << 8) + b).toString(16).slice(1);
-}
-function grad(hex){ return `linear-gradient(135deg, ${shade(hex, 18)} 0%, ${hex} 45%, ${shade(hex, -46)} 100%)`; }
 function letter(name){ return (name || '?').trim().charAt(0).toUpperCase(); }
 function esc(s = ''){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function hostOf(u){ try { return new URL(u).hostname.replace(/^www\./,''); } catch { return u; } }
+function hostOf(u){ try { return new URL(u, location.href).hostname.replace(/^www\./,''); } catch { return u; } }
+function openTab(url){ const w = window.open(url, '_blank', 'noopener'); if (!w) location.href = url; }
 
 /* ============================================================
    DATA
    ============================================================ */
 const FALLBACK = { loaders: [
-  { id:'t9os', name:'T9OS', version:'V.097', tag:'desktop os', url:'https://t9os.space/', source:'https://github.com/t9lat22/t9lat22.github.io', logo:'https://cdn.jsdelivr.net/gh/t9lat22/t9lat22.github.io@master/Logo22.png', accent:'#5b8cff', featured:true, blurb:'a whole fake desktop with games and apps built in' },
-  { id:'cine-os', name:'Cine OS', version:'V2', tag:'desktop os', url:'https://cdn.jsdelivr.net/gh/nathanpikelny6-oss/CineOS@main/index.html', source:'https://github.com/nathanpikelny6-oss/CineOS', accent:'#16c2a3', featured:true, blurb:'cinematic desktop with a boot sequence and app dock' },
-  { id:'gn-math', name:'gn-math', version:'', tag:'games', url:'https://cdn.jsdelivr.net/gh/genizymath/gnnew@main/index.html', source:'https://github.com/genizymath/gnnew', logo:'https://cdn.jsdelivr.net/gh/genizymath/gnnew@main/favicon.png', accent:'#fc2651', featured:true, blurb:'big grid of unblocked games, loads fast' },
-  { id:'cherri', name:'Cherri', version:'V2', tag:'proxy', url:'https://cdn.jsdelivr.net/gh/x8rr/cherri-v2-leak@main/public/index.html', source:'https://github.com/x8rr/cherri-v2-leak', logo:'https://cdn.jsdelivr.net/gh/x8rr/cherri-v2-leak@main/public/assets/img/fav.png', accent:'#c9184a', featured:true, blurb:'leaked build of the cherri proxy' },
-  { id:'discord', name:'Discord', version:'', tag:'chat', url:'library/discord.html', source:'', accent:'#5865f2', featured:false, blurb:'the discord landing page, saved and ready to open' },
-  { id:'google-classroom', name:'Google Classroom', version:'', tag:'video', url:'library/google-classroom.html', source:'', accent:'#2e7d32', featured:false, blurb:'search and watch, tucked behind a classroom tab' },
+  { id:'t9os', name:'T9OS', version:'V.097', tag:'os', url:'https://t9os.space/', source:'https://github.com/t9lat22/t9lat22.github.io', logo:'https://cdn.jsdelivr.net/gh/t9lat22/t9lat22.github.io@master/logo.png', accent:'#5b8cff', featured:true },
+  { id:'cine-os', name:'Cine OS', version:'V2', tag:'os', url:'https://raw.githack.com/nathanpikelny6-oss/CineOS/main/index.html', source:'https://github.com/nathanpikelny6-oss/CineOS', accent:'#16c2a3', featured:true },
+  { id:'gn-math', name:'gn-math', version:'', tag:'games', url:'https://raw.githack.com/genizymath/gnnew/main/index.html', source:'https://github.com/genizymath/gnnew', logo:'https://cdn.jsdelivr.net/gh/genizymath/gnnew@main/gn-mathtitle.png', accent:'#fc2651', featured:true },
+  { id:'cherri', name:'Cherri', version:'V2', tag:'proxy', url:'https://raw.githack.com/x8rr/cherri-v2-leak/main/public/index.html', source:'https://github.com/x8rr/cherri-v2-leak', logo:'https://cdn.jsdelivr.net/gh/x8rr/cherri-v2-leak@main/public/assets/img/fav.png', accent:'#c9184a', featured:true },
+  { id:'noahs-tutoring', name:"Noah's Tutoring", version:'', tag:'tutoring', url:'https://raw.githack.com/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor/master/index.html', source:'https://github.com/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor', logo:'https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/images/logo.png', accent:'#f59e0b', featured:true },
+  { id:'discord', name:'Discord', version:'', tag:'chat', url:'library/discord.html', source:'', accent:'#5865f2', featured:false },
+  { id:'google-classroom', name:'Google Classroom', version:'', tag:'video', url:'library/google-classroom.html', source:'', accent:'#2e7d32', featured:false },
 ]};
 
 async function loadData(){
   let data = null;
-  try { const res = await fetch('loaders.json', { cache:'no-cache' }); if (res.ok) data = await res.json(); } catch {}
+  try { const res = await fetch('loaders.json?v=' + Date.now(), { cache:'no-store' }); if (res.ok) data = await res.json(); } catch {}
   if (!data || !Array.isArray(data.loaders) || !data.loaders.length) data = FALLBACK;
-  state.loaders = data.loaders.map(l => ({ accent:'#7b6cff', tag:'loader', version:'', blurb:'', source:'', logo:'', featured:false, ...l }));
+  state.loaders = data.loaders.map(l => ({ accent:'#7b6cff', tag:'', version:'', source:'', logo:'', featured:false, ...l }));
   state.hero = state.loaders.filter(l => l.featured);
-  if (!state.hero.length) state.hero = state.loaders.slice(0, 4);
+  if (!state.hero.length) state.hero = state.loaders.slice(0, 5);
   buildHero();
   buildGrid();
   $('#navCount').textContent = state.loaders.length + (state.loaders.length === 1 ? ' loader' : ' loaders');
 }
 
 /* ============================================================
-   HERO CAROUSEL
+   HERO
    ============================================================ */
+function mediaInner(l, letterClass){
+  return `<span class="${letterClass}">${esc(letter(l.name))}</span>` +
+    (l.logo ? `<img src="${esc(l.logo)}" alt="" onerror="this.remove()">` : '');
+}
 function buildHero(){
   const track = $('#heroTrack'), dots = $('#heroDots');
   track.innerHTML = state.hero.map(l => `
-    <div class="hero__slide" style="background:${grad(l.accent)}">
-      ${l.logo
-        ? `<img class="hero__logo" src="${esc(l.logo)}" alt="" onerror="this.remove()">`
-        : `<div class="hero__glyph">${esc(letter(l.name))}</div>`}
-      <div class="hero__inner">
-        <span class="hero__eyebrow">popular right now</span>
+    <div class="hero__slide" style="--a:${esc(l.accent)}">
+      <div class="hero__text">
         <h2 class="hero__name">${esc(l.name)}${l.version ? `<span class="hero__ver">${esc(l.version)}</span>` : ''}</h2>
-        ${l.blurb ? `<p class="hero__blurb">${esc(l.blurb)}</p>` : ''}
         <div class="hero__row">
-          <button class="hero__load" data-id="${esc(l.id)}">Load</button>
+          <button class="hero__open" data-id="${esc(l.id)}">Open</button>
           ${l.source ? `<a class="hero__src" href="${esc(l.source)}" target="_blank" rel="noopener">source</a>` : ''}
         </div>
       </div>
+      <div class="hero__media">${mediaInner(l, 'hero__letter')}</div>
     </div>`).join('');
 
   dots.innerHTML = state.hero.map((_, i) => `<button class="hero__dot${i===0?' on':''}" data-i="${i}" aria-label="slide ${i+1}"></button>`).join('');
 
-  $$('.hero__load', track).forEach(b => b.addEventListener('click', () => {
-    const l = state.hero.find(x => x.id === b.dataset.id); if (l) open(l);
+  $$('.hero__open', track).forEach(b => b.addEventListener('click', () => {
+    const l = state.hero.find(x => x.id === b.dataset.id); if (l) openTab(l.url);
   }));
   $$('.hero__dot', dots).forEach(d => d.addEventListener('click', () => goHero(+d.dataset.i, true)));
 
@@ -89,13 +76,9 @@ function applyHero(){
   $('#heroTrack').style.transform = `translateX(-${state.heroIdx * 100}%)`;
   $$('.hero__dot').forEach((d, i) => d.classList.toggle('on', i === state.heroIdx));
 }
-function goHero(i, manual){
-  const n = state.hero.length; if (!n) return;
-  state.heroIdx = (i + n) % n; applyHero();
-  if (manual) startHero();
-}
+function goHero(i, manual){ const n = state.hero.length; if (!n) return; state.heroIdx = (i + n) % n; applyHero(); if (manual) startHero(); }
 function startHero(){ stopHero(); if (state.hero.length > 1) state.heroTimer = setInterval(() => goHero(state.heroIdx + 1), 5200); }
-function stopHero(){ if (state.heroTimer) { clearInterval(state.heroTimer); state.heroTimer = null; } }
+function stopHero(){ if (state.heroTimer){ clearInterval(state.heroTimer); state.heroTimer = null; } }
 
 /* ============================================================
    GRID
@@ -103,63 +86,27 @@ function stopHero(){ if (state.heroTimer) { clearInterval(state.heroTimer); stat
 function buildGrid(){
   const grid = $('#grid');
   const q = state.query.toLowerCase();
-  const list = q
-    ? state.loaders.filter(l => (l.name+' '+l.tag+' '+l.blurb+' '+(l.version||'')).toLowerCase().includes(q))
-    : state.loaders;
+  const list = q ? state.loaders.filter(l => (l.name+' '+l.tag+' '+(l.version||'')).toLowerCase().includes(q)) : state.loaders;
 
   $('#empty').hidden = list.length > 0;
   grid.innerHTML = list.map(l => `
-    <article class="card" tabindex="0" data-id="${esc(l.id)}">
-      <div class="card__art" style="background:${grad(l.accent)}">
-        <span class="card__chip">${esc(l.tag)}</span>
-        <span class="card__glyph">${esc(letter(l.name))}</span>
-        ${l.logo ? `<img class="card__logo" src="${esc(l.logo)}" alt="" loading="lazy" onerror="this.remove()">` : ''}
-        <span class="card__play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
-      </div>
+    <article class="card" tabindex="0" data-id="${esc(l.id)}" style="--a:${esc(l.accent)}">
+      <div class="card__media">${mediaInner(l, 'card__letter')}</div>
       <div class="card__body">
-        <div class="card__name">${esc(l.name)}${l.version ? `<span class="card__ver">${esc(l.version)}</span>` : ''}</div>
-        ${l.blurb ? `<div class="card__blurb">${esc(l.blurb)}</div>` : ''}
-        ${l.source ? `<a class="card__src" href="${esc(l.source)}" target="_blank" rel="noopener">${esc(hostForSource(l.source))} &#8599;</a>` : ''}
+        <span class="card__name">${esc(l.name)}${l.version ? `<span class="card__ver">${esc(l.version)}</span>` : ''}</span>
+        ${l.tag ? `<span class="card__tag">${esc(l.tag)}</span>` : ''}
       </div>
     </article>`).join('');
 
   $$('.card', grid).forEach(card => {
     const l = state.loaders.find(x => x.id === card.dataset.id);
-    card.addEventListener('click', e => { if (e.target.closest('.card__src')) return; open(l); });
-    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(l); } });
+    card.addEventListener('click', () => openTab(l.url));
+    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openTab(l.url); } });
   });
 }
-function hostForSource(s){ return /github\.com/.test(s) ? 'github' : hostOf(s); }
 
 /* ============================================================
-   VIEWER
-   ============================================================ */
-function open(loader){
-  const v = $('#viewer');
-  $('#vTitle').textContent = loader.name || hostOf(loader.url);
-  $('#vVer').textContent = loader.version || '';
-  v.hidden = false;
-  document.body.style.overflow = 'hidden';
-  v._url = loader.url;
-  loadFrame(loader.url);
-}
-function loadFrame(url){
-  const frame = $('#frame'), loading = $('#vLoading');
-  loading.style.display = 'flex';
-  let done = false;
-  frame.onload = () => { done = true; loading.style.display = 'none'; };
-  setTimeout(() => { if (!done) loading.style.display = 'none'; }, 6000);
-  frame.src = 'about:blank';
-  requestAnimationFrame(() => { frame.src = url; });
-}
-function closeViewer(){
-  $('#viewer').hidden = true;
-  $('#frame').src = 'about:blank';
-  document.body.style.overflow = '';
-}
-
-/* ============================================================
-   VIEW SWITCHING (island)
+   VIEW SWITCHING
    ============================================================ */
 function setView(v){
   state.view = v;
@@ -167,37 +114,34 @@ function setView(v){
   $('#libraryView').hidden = !lib;
   $('#htmlView').hidden = lib;
   $$('.island__tab').forEach(t => t.classList.toggle('is-active', t.dataset.view === v));
-  $('#islandPill').style.transform = `translateX(${lib ? 0 : 122}px)`;
+  $('#islandPill').style.transform = `translateX(${lib ? 0 : 116}px)`;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 /* ============================================================
-   BRING YOUR OWN  (file + github)
+   BRING YOUR OWN  (opens in a new tab, with a loading step)
    ============================================================ */
-function loadWithSpinner(obj){
-  const lf = $('#loadingFile');
-  lf.hidden = false;
-  setTimeout(() => { lf.hidden = true; open(obj); }, 850);
+function openLoadingTab(){
+  const win = window.open('about:blank', '_blank');   // opened inside the click/change gesture
+  $('#loadingFile').hidden = false;
+  return url => { $('#loadingFile').hidden = true; if (win && !win.closed) win.location = url; else openTab(url); };
 }
 function handleFile(file){
   if (!file) return;
   const ok = /\.(html?|svg)$/i.test(file.name) || /html|svg/.test(file.type);
-  if (!ok){ toast('only .html and .svg files', 'warn'); return; }
-  const type = /\.svg$/i.test(file.name) || /svg/.test(file.type) ? 'svg' : 'html';
-  const mime = type === 'svg' ? 'image/svg+xml' : 'text/html';
+  if (!ok){ toast('only .html and .svg files'); return; }
+  const mime = /\.svg$/i.test(file.name) || /svg/.test(file.type) ? 'image/svg+xml' : 'text/html';
+  const finish = openLoadingTab();
   const reader = new FileReader();
-  reader.onload = () => {
-    const url = URL.createObjectURL(new Blob([reader.result], { type: mime }));
-    loadWithSpinner({ name: file.name, version: '', url });
-  };
-  reader.onerror = () => toast('could not read that file', 'warn');
+  reader.onload = () => { const url = URL.createObjectURL(new Blob([reader.result], { type: mime })); setTimeout(() => finish(url), 550); };
+  reader.onerror = () => { $('#loadingFile').hidden = true; toast('could not read that file'); };
   reader.readAsText(file);
 }
 function ghLoad(){
-  const raw = $('#ghInput').value.trim();
-  if (!raw) return;
+  const raw = $('#ghInput').value.trim(); if (!raw) return;
   const url = resolveLoad(raw);
-  loadWithSpinner({ name: labelFor(raw, url), version: '', url });
+  const finish = openLoadingTab();
+  setTimeout(() => finish(url), 850);
   $('#ghInput').value = '';
 }
 function resolveLoad(v){
@@ -216,11 +160,7 @@ function resolveLoad(v){
 }
 function repoToUrl(owner, repo){
   if (/\.github\.io$/i.test(repo)) return `https://${repo}/`;
-  return `https://cdn.jsdelivr.net/gh/${owner}/${repo}/index.html`;
-}
-function labelFor(raw, url){
-  const m = raw.match(/^([\w.-]+)\/([\w.-]+)$/);
-  return m ? m[2] : hostOf(url);
+  return `https://raw.githack.com/${owner}/${repo}/main/index.html`;
 }
 
 /* ============================================================
@@ -235,18 +175,11 @@ function openEditor(){
   setTimeout(() => code.focus(), 60);
 }
 function closeEditor(){ $('#editor').hidden = true; }
-function renderScratch(){
-  const code = $('#edCode').value;
-  try { localStorage.setItem('jr:scratch', code); } catch {}
-  $('#edPreview').srcdoc = code;
-}
-function scratchToViewer(){
-  const url = URL.createObjectURL(new Blob([$('#edCode').value], { type: 'text/html' }));
-  open({ name: 'scratch', version: '', url });
-}
+function renderScratch(){ const c = $('#edCode').value; try { localStorage.setItem('jr:scratch', c); } catch {} $('#edPreview').srcdoc = c; }
+function scratchToTab(){ const url = URL.createObjectURL(new Blob([$('#edCode').value], { type: 'text/html' })); openTab(url); }
 
 /* ============================================================
-   WIRE UP
+   WIRE
    ============================================================ */
 function wire(){
   $('#search').addEventListener('input', e => { state.query = e.target.value; buildGrid(); });
@@ -255,57 +188,39 @@ function wire(){
   $('#heroPrev').addEventListener('click', () => goHero(state.heroIdx - 1, true));
   $('#heroNext').addEventListener('click', () => goHero(state.heroIdx + 1, true));
 
-  // island
   $$('.island__tab').forEach(t => t.addEventListener('click', () => setView(t.dataset.view)));
 
-  // bring your own
   const drop = $('#drop'), fileInput = $('#fileInput');
   drop.addEventListener('click', () => fileInput.click());
   drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
-  fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); e.target.value = ''; });
+  fileInput.addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; if (f) handleFile(f); });
   ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('drag'); }));
   ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); if (ev === 'drop' || !drop.contains(e.relatedTarget)) drop.classList.remove('drag'); }));
   drop.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) handleFile(f); });
   $('#ghBtn').addEventListener('click', ghLoad);
   $('#ghInput').addEventListener('keydown', e => { if (e.key === 'Enter') ghLoad(); });
 
-  // viewer
-  $('#vBack').addEventListener('click', closeViewer);
-  $('#vReload').addEventListener('click', () => { if ($('#viewer')._url) loadFrame($('#viewer')._url); });
-  $('#vNew').addEventListener('click', () => { if ($('#viewer')._url) window.open($('#viewer')._url, '_blank', 'noopener'); });
-  $('#vFull').addEventListener('click', () => { const f = $('#frame'); (f.requestFullscreen || f.webkitRequestFullscreen || (()=>{})).call(f); });
-
-  // hidden editor (corner dot + ctrl/cmd + e)
   $('#editorTrigger').addEventListener('click', openEditor);
   $('#edRun').addEventListener('click', renderScratch);
   $('#edClose').addEventListener('click', closeEditor);
-  $('#edFull').addEventListener('click', scratchToViewer);
+  $('#edFull').addEventListener('click', scratchToTab);
   $('#edWrap').addEventListener('click', () => { const c = $('#edCode'); c.style.whiteSpace = c.style.whiteSpace === 'pre' ? 'pre-wrap' : 'pre'; });
   $('#edCode').addEventListener('input', () => { clearTimeout(edTimer); edTimer = setTimeout(renderScratch, 320); });
 
   window.addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && (e.key === 'e' || e.key === 'E')){ e.preventDefault(); $('#editor').hidden ? openEditor() : closeEditor(); return; }
-    if (e.key === 'Escape'){
-      if (!$('#editor').hidden){ closeEditor(); return; }
-      if (!$('#viewer').hidden){ closeViewer(); return; }
-    }
-    if (e.key === '/' && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName) && $('#viewer').hidden && $('#editor').hidden){
-      e.preventDefault(); setView('library'); $('#search').focus();
-    }
+    if (e.key === 'Escape' && !$('#editor').hidden){ closeEditor(); return; }
+    if (e.key === '/' && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName) && $('#editor').hidden){ e.preventDefault(); setView('library'); $('#search').focus(); }
   });
 }
 
-function toast(msg, kind){
+function toast(msg){
   const el = document.createElement('div');
-  el.className = 'toast' + (kind ? ' toast--' + kind : '');
-  el.textContent = msg;
+  el.className = 'toast'; el.textContent = msg;
   $('#toasts').appendChild(el);
   setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 250); }, 3000);
 }
 
-/* ============================================================
-   INIT
-   ============================================================ */
 function init(){ wire(); loadData(); }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
 else init();
