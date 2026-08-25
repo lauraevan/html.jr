@@ -1,12 +1,12 @@
 {
-  "note": "The library for HTML JR. Add an entry and it shows up. Fields: id, name, version, tag, url (opens in a new tab), source (github/home link), logo (optional image url, falls back to the first letter), accent (hex used for small trim like the tag and open button), featured (bool, puts it in the rotating hero).",
+  "note": "Library for HTML JR. url is what launches. Static sites are served from the actual github repo through raw.githack.com (not the project's own domain). gn-math is copied straight into this repo under library/. truffled and cherri are proxy apps that need their own server, so they open their live site. Fields: id, name, version, tag, url, source, logo, accent, featured.",
   "loaders": [
     {
       "id": "t9os",
       "name": "T9OS",
       "version": "V.097",
       "tag": "os",
-      "url": "https://t9os.space/",
+      "url": "https://raw.githack.com/t9lat22/t9lat22.github.io/master/index.html",
       "source": "https://github.com/t9lat22/t9lat22.github.io",
       "logo": "https://cdn.jsdelivr.net/gh/t9lat22/t9lat22.github.io@master/logo.png",
       "accent": "#5b8cff",
@@ -27,21 +27,21 @@
       "name": "gn-math",
       "version": "",
       "tag": "games",
-      "url": "https://raw.githack.com/genizymath/gnnew/main/index.html",
+      "url": "library/gnmath/index.html",
       "source": "https://github.com/genizymath/gnnew",
-      "logo": "https://cdn.jsdelivr.net/gh/genizymath/gnnew@main/gn-mathtitle.png",
+      "logo": "library/gnmath/gn-mathtitle.png",
       "accent": "#fc2651",
       "featured": true
     },
     {
-      "id": "cherri",
-      "name": "Cherri",
-      "version": "V2",
+      "id": "truffled",
+      "name": "Truffled",
+      "version": "",
       "tag": "proxy",
-      "url": "https://raw.githack.com/x8rr/cherri-v2-leak/main/public/index.html",
-      "source": "https://github.com/x8rr/cherri-v2-leak",
-      "logo": "https://cdn.jsdelivr.net/gh/x8rr/cherri-v2-leak@main/public/assets/img/fav.png",
-      "accent": "#c9184a",
+      "url": "https://truffled.lol/",
+      "source": "https://github.com/aukak/truffled",
+      "logo": "https://cdn.jsdelivr.net/gh/aukak/truffled@main/public/png/logo.png",
+      "accent": "#a855f7",
       "featured": true
     },
     {
@@ -54,6 +54,17 @@
       "logo": "https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/images/logo.png",
       "accent": "#f59e0b",
       "featured": true
+    },
+    {
+      "id": "cherri",
+      "name": "Cherri",
+      "version": "V2",
+      "tag": "proxy",
+      "url": "https://raw.githack.com/x8rr/cherri-v2-leak/main/public/index.html",
+      "source": "https://github.com/x8rr/cherri-v2-leak",
+      "logo": "https://cdn.jsdelivr.net/gh/x8rr/cherri-v2-leak@main/public/assets/img/fav.png",
+      "accent": "#c9184a",
+      "featured": false
     },
     {
       "id": "discord",

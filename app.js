@@ -1,6 +1,7 @@
 /* ============================================================
    HTML JR  ::  app.js
-   pick a loader and it opens in a new tab.
+   preloaded loaders open in a new tab.
+   imported files/links open in the in-page viewer.
    ============================================================ */
 'use strict';
 
@@ -18,11 +19,12 @@ function openTab(url){ const w = window.open(url, '_blank', 'noopener'); if (!w)
    DATA
    ============================================================ */
 const FALLBACK = { loaders: [
-  { id:'t9os', name:'T9OS', version:'V.097', tag:'os', url:'https://t9os.space/', source:'https://github.com/t9lat22/t9lat22.github.io', logo:'https://cdn.jsdelivr.net/gh/t9lat22/t9lat22.github.io@master/logo.png', accent:'#5b8cff', featured:true },
+  { id:'t9os', name:'T9OS', version:'V.097', tag:'os', url:'https://raw.githack.com/t9lat22/t9lat22.github.io/master/index.html', source:'https://github.com/t9lat22/t9lat22.github.io', logo:'https://cdn.jsdelivr.net/gh/t9lat22/t9lat22.github.io@master/logo.png', accent:'#5b8cff', featured:true },
   { id:'cine-os', name:'Cine OS', version:'V2', tag:'os', url:'https://raw.githack.com/nathanpikelny6-oss/CineOS/main/index.html', source:'https://github.com/nathanpikelny6-oss/CineOS', accent:'#16c2a3', featured:true },
-  { id:'gn-math', name:'gn-math', version:'', tag:'games', url:'https://raw.githack.com/genizymath/gnnew/main/index.html', source:'https://github.com/genizymath/gnnew', logo:'https://cdn.jsdelivr.net/gh/genizymath/gnnew@main/gn-mathtitle.png', accent:'#fc2651', featured:true },
-  { id:'cherri', name:'Cherri', version:'V2', tag:'proxy', url:'https://raw.githack.com/x8rr/cherri-v2-leak/main/public/index.html', source:'https://github.com/x8rr/cherri-v2-leak', logo:'https://cdn.jsdelivr.net/gh/x8rr/cherri-v2-leak@main/public/assets/img/fav.png', accent:'#c9184a', featured:true },
+  { id:'gn-math', name:'gn-math', version:'', tag:'games', url:'library/gnmath/index.html', source:'https://github.com/genizymath/gnnew', logo:'library/gnmath/gn-mathtitle.png', accent:'#fc2651', featured:true },
+  { id:'truffled', name:'Truffled', version:'', tag:'proxy', url:'https://truffled.lol/', source:'https://github.com/aukak/truffled', logo:'https://cdn.jsdelivr.net/gh/aukak/truffled@main/public/png/logo.png', accent:'#a855f7', featured:true },
   { id:'noahs-tutoring', name:"Noah's Tutoring", version:'', tag:'tutoring', url:'https://raw.githack.com/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor/master/index.html', source:'https://github.com/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor', logo:'https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/images/logo.png', accent:'#f59e0b', featured:true },
+  { id:'cherri', name:'Cherri', version:'V2', tag:'proxy', url:'https://raw.githack.com/x8rr/cherri-v2-leak/main/public/index.html', source:'https://github.com/x8rr/cherri-v2-leak', logo:'https://cdn.jsdelivr.net/gh/x8rr/cherri-v2-leak@main/public/assets/img/fav.png', accent:'#c9184a', featured:false },
   { id:'discord', name:'Discord', version:'', tag:'chat', url:'library/discord.html', source:'', accent:'#5865f2', featured:false },
   { id:'google-classroom', name:'Google Classroom', version:'', tag:'video', url:'library/google-classroom.html', source:'', accent:'#2e7d32', featured:false },
 ]};
@@ -119,29 +121,50 @@ function setView(v){
 }
 
 /* ============================================================
-   BRING YOUR OWN  (opens in a new tab, with a loading step)
+   IN-PAGE VIEWER  (imports render here, reliably)
    ============================================================ */
-function openLoadingTab(){
-  const win = window.open('about:blank', '_blank');   // opened inside the click/change gesture
-  $('#loadingFile').hidden = false;
-  return url => { $('#loadingFile').hidden = true; if (win && !win.closed) win.location = url; else openTab(url); };
+function openViewer(title, url){
+  const v = $('#viewer');
+  $('#vTitle').textContent = title || hostOf(url);
+  v.hidden = false;
+  v._url = url;
+  document.body.style.overflow = 'hidden';
+  loadFrame(url);
 }
+function loadFrame(url){
+  const frame = $('#frame'), loading = $('#vLoading');
+  loading.style.display = 'flex';
+  let done = false;
+  frame.onload = () => { done = true; loading.style.display = 'none'; };
+  setTimeout(() => { if (!done) loading.style.display = 'none'; }, 6000);
+  frame.src = 'about:blank';
+  requestAnimationFrame(() => { frame.src = url; });
+}
+function closeViewer(){ $('#viewer').hidden = true; $('#frame').src = 'about:blank'; document.body.style.overflow = ''; }
+
+/* ============================================================
+   IMPORTER  (file + link)  ->  in-page viewer
+   ============================================================ */
 function handleFile(file){
   if (!file) return;
   const ok = /\.(html?|svg)$/i.test(file.name) || /html|svg/.test(file.type);
   if (!ok){ toast('only .html and .svg files'); return; }
   const mime = /\.svg$/i.test(file.name) || /svg/.test(file.type) ? 'image/svg+xml' : 'text/html';
-  const finish = openLoadingTab();
+  const lf = $('#loadingFile'); lf.hidden = false;
   const reader = new FileReader();
-  reader.onload = () => { const url = URL.createObjectURL(new Blob([reader.result], { type: mime })); setTimeout(() => finish(url), 550); };
-  reader.onerror = () => { $('#loadingFile').hidden = true; toast('could not read that file'); };
+  reader.onload = () => {
+    const url = URL.createObjectURL(new Blob([reader.result], { type: mime }));
+    setTimeout(() => { lf.hidden = true; openViewer(file.name, url); }, 500);
+  };
+  reader.onerror = () => { lf.hidden = true; toast('could not read that file'); };
   reader.readAsText(file);
 }
 function ghLoad(){
   const raw = $('#ghInput').value.trim(); if (!raw) return;
   const url = resolveLoad(raw);
-  const finish = openLoadingTab();
-  setTimeout(() => finish(url), 850);
+  const title = raw.match(/^([\w.-]+)\/([\w.-]+)$/) ? RegExp.$2 : hostOf(url);
+  const lf = $('#loadingFile'); lf.hidden = false;
+  setTimeout(() => { lf.hidden = true; openViewer(title, url); }, 700);
   $('#ghInput').value = '';
 }
 function resolveLoad(v){
@@ -176,7 +199,7 @@ function openEditor(){
 }
 function closeEditor(){ $('#editor').hidden = true; }
 function renderScratch(){ const c = $('#edCode').value; try { localStorage.setItem('jr:scratch', c); } catch {} $('#edPreview').srcdoc = c; }
-function scratchToTab(){ const url = URL.createObjectURL(new Blob([$('#edCode').value], { type: 'text/html' })); openTab(url); }
+function scratchToViewer(){ const url = URL.createObjectURL(new Blob([$('#edCode').value], { type: 'text/html' })); closeEditor(); openViewer('scratch', url); }
 
 /* ============================================================
    WIRE
@@ -200,17 +223,24 @@ function wire(){
   $('#ghBtn').addEventListener('click', ghLoad);
   $('#ghInput').addEventListener('keydown', e => { if (e.key === 'Enter') ghLoad(); });
 
+  $('#vBack').addEventListener('click', closeViewer);
+  $('#vReload').addEventListener('click', () => { if ($('#viewer')._url) loadFrame($('#viewer')._url); });
+  $('#vNew').addEventListener('click', () => { if ($('#viewer')._url) openTab($('#viewer')._url); });
+
   $('#editorTrigger').addEventListener('click', openEditor);
   $('#edRun').addEventListener('click', renderScratch);
   $('#edClose').addEventListener('click', closeEditor);
-  $('#edFull').addEventListener('click', scratchToTab);
+  $('#edFull').addEventListener('click', scratchToViewer);
   $('#edWrap').addEventListener('click', () => { const c = $('#edCode'); c.style.whiteSpace = c.style.whiteSpace === 'pre' ? 'pre-wrap' : 'pre'; });
   $('#edCode').addEventListener('input', () => { clearTimeout(edTimer); edTimer = setTimeout(renderScratch, 320); });
 
   window.addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && (e.key === 'e' || e.key === 'E')){ e.preventDefault(); $('#editor').hidden ? openEditor() : closeEditor(); return; }
-    if (e.key === 'Escape' && !$('#editor').hidden){ closeEditor(); return; }
-    if (e.key === '/' && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName) && $('#editor').hidden){ e.preventDefault(); setView('library'); $('#search').focus(); }
+    if (e.key === 'Escape'){
+      if (!$('#editor').hidden){ closeEditor(); return; }
+      if (!$('#viewer').hidden){ closeViewer(); return; }
+    }
+    if (e.key === '/' && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName) && $('#editor').hidden && $('#viewer').hidden){ e.preventDefault(); setView('library'); $('#search').focus(); }
   });
 }
 

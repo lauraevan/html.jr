@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#14151b" />
+  <meta name="theme-color" content="#0b0d16" />
   <title>HTML JR</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -80,6 +80,24 @@
       <span>HTML</span>
     </button>
   </nav>
+
+  <!-- ================= IN-PAGE VIEWER (for imports) ================= -->
+  <div class="viewer" id="viewer" hidden>
+    <div class="viewer__bar">
+      <button class="viewer__back" id="vBack">‹ back</button>
+      <div class="viewer__id"><span id="vTitle">loading</span></div>
+      <div class="viewer__actions">
+        <button id="vReload" title="reload">reload</button>
+        <button id="vNew" title="open in a new tab">open</button>
+      </div>
+    </div>
+    <div class="viewer__stage">
+      <div class="viewer__loading" id="vLoading"><span class="pulse"></span> opening</div>
+      <iframe id="frame" class="viewer__frame" title="loaded content"
+        allow="accelerometer; autoplay; camera; clipboard-write; encrypted-media; fullscreen; gamepad; gyroscope; microphone; midi; xr-spatial-tracking"
+        allowfullscreen></iframe>
+    </div>
+  </div>
 
   <!-- ================= HIDDEN SCRATCH EDITOR ================= -->
   <div class="editor" id="editor" hidden>
