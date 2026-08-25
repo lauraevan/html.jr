@@ -1,4 +1,4 @@
-# HTML JR
+# Nox Loader
 
 Pick a loader and it opens in a new tab. Or bring your own html and it opens
 in the viewer.

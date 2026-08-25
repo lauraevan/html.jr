@@ -1,5 +1,5 @@
 /* ============================================================
-   HTML JR  ::  app.js
+   Nox Loader  ::  app.js
    preloaded loaders open in a new tab.
    imported files/links open in the in-page viewer.
    ============================================================ */
@@ -123,24 +123,48 @@ function setView(v){
 /* ============================================================
    IN-PAGE VIEWER  (imports render here, reliably)
    ============================================================ */
-function openViewer(title, url){
+function showViewer(title){
   const v = $('#viewer');
-  $('#vTitle').textContent = title || hostOf(url);
+  $('#vTitle').textContent = title || 'loaded';
   v.hidden = false;
-  v._url = url;
   document.body.style.overflow = 'hidden';
-  loadFrame(url);
-}
-function loadFrame(url){
-  const frame = $('#frame'), loading = $('#vLoading');
+  const loading = $('#vLoading');
   loading.style.display = 'flex';
+  const frame = $('#frame');
   let done = false;
   frame.onload = () => { done = true; loading.style.display = 'none'; };
   setTimeout(() => { if (!done) loading.style.display = 'none'; }, 6000);
-  frame.src = 'about:blank';
-  requestAnimationFrame(() => { frame.src = url; });
+  return frame;
 }
-function closeViewer(){ $('#viewer').hidden = true; $('#frame').src = 'about:blank'; document.body.style.overflow = ''; }
+/* render inline html/svg text (uploads, scratch) with srcdoc: no blob, no url */
+function openViewerDoc(title, html){
+  const v = $('#viewer'); v._html = html; v._url = null;
+  const frame = showViewer(title);
+  frame.removeAttribute('src');
+  frame.srcdoc = html;
+}
+/* load a url (links, repos) */
+function openViewerUrl(title, url){
+  const v = $('#viewer'); v._url = url; v._html = null;
+  const frame = showViewer(title || hostOf(url));
+  frame.removeAttribute('srcdoc');
+  frame.src = url;
+}
+function reloadViewer(){
+  const v = $('#viewer');
+  if (v._html != null) openViewerDoc($('#vTitle').textContent, v._html);
+  else if (v._url) openViewerUrl($('#vTitle').textContent, v._url);
+}
+function viewerOpenTab(){
+  const v = $('#viewer');
+  if (v._url) return openTab(v._url);
+  if (v._html != null) openTab(URL.createObjectURL(new Blob([v._html], { type: 'text/html' })));
+}
+function closeViewer(){
+  const frame = $('#frame');
+  frame.removeAttribute('srcdoc'); frame.src = 'about:blank';
+  $('#viewer').hidden = true; document.body.style.overflow = '';
+}
 
 /* ============================================================
    IMPORTER  (file + link)  ->  in-page viewer
@@ -149,13 +173,9 @@ function handleFile(file){
   if (!file) return;
   const ok = /\.(html?|svg)$/i.test(file.name) || /html|svg/.test(file.type);
   if (!ok){ toast('only .html and .svg files'); return; }
-  const mime = /\.svg$/i.test(file.name) || /svg/.test(file.type) ? 'image/svg+xml' : 'text/html';
   const lf = $('#loadingFile'); lf.hidden = false;
   const reader = new FileReader();
-  reader.onload = () => {
-    const url = URL.createObjectURL(new Blob([reader.result], { type: mime }));
-    setTimeout(() => { lf.hidden = true; openViewer(file.name, url); }, 500);
-  };
+  reader.onload = () => { setTimeout(() => { lf.hidden = true; openViewerDoc(file.name, String(reader.result)); }, 400); };
   reader.onerror = () => { lf.hidden = true; toast('could not read that file'); };
   reader.readAsText(file);
 }
@@ -164,7 +184,7 @@ function ghLoad(){
   const url = resolveLoad(raw);
   const title = raw.match(/^([\w.-]+)\/([\w.-]+)$/) ? RegExp.$2 : hostOf(url);
   const lf = $('#loadingFile'); lf.hidden = false;
-  setTimeout(() => { lf.hidden = true; openViewer(title, url); }, 700);
+  setTimeout(() => { lf.hidden = true; openViewerUrl(title, url); }, 500);
   $('#ghInput').value = '';
 }
 function resolveLoad(v){
@@ -193,13 +213,13 @@ let edTimer = null;
 function openEditor(){
   $('#editor').hidden = false;
   const code = $('#edCode');
-  if (!code.value){ try { code.value = localStorage.getItem('jr:scratch') || ''; } catch {} }
+  if (!code.value){ try { code.value = localStorage.getItem('nox:scratch') || ''; } catch {} }
   renderScratch();
   setTimeout(() => code.focus(), 60);
 }
 function closeEditor(){ $('#editor').hidden = true; }
-function renderScratch(){ const c = $('#edCode').value; try { localStorage.setItem('jr:scratch', c); } catch {} $('#edPreview').srcdoc = c; }
-function scratchToViewer(){ const url = URL.createObjectURL(new Blob([$('#edCode').value], { type: 'text/html' })); closeEditor(); openViewer('scratch', url); }
+function renderScratch(){ const c = $('#edCode').value; try { localStorage.setItem('nox:scratch', c); } catch {} $('#edPreview').srcdoc = c; }
+function scratchToViewer(){ closeEditor(); openViewerDoc('scratch', $('#edCode').value); }
 
 /* ============================================================
    WIRE
@@ -224,8 +244,8 @@ function wire(){
   $('#ghInput').addEventListener('keydown', e => { if (e.key === 'Enter') ghLoad(); });
 
   $('#vBack').addEventListener('click', closeViewer);
-  $('#vReload').addEventListener('click', () => { if ($('#viewer')._url) loadFrame($('#viewer')._url); });
-  $('#vNew').addEventListener('click', () => { if ($('#viewer')._url) openTab($('#viewer')._url); });
+  $('#vReload').addEventListener('click', reloadViewer);
+  $('#vNew').addEventListener('click', viewerOpenTab);
 
   $('#editorTrigger').addEventListener('click', openEditor);
   $('#edRun').addEventListener('click', renderScratch);

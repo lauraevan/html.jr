@@ -4,22 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0b0d16" />
-  <title>HTML JR</title>
+  <title>Nox Loader</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="styles.css" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%237b6cff'/%3E%3Ctext x='32' y='43' font-family='Verdana,sans-serif' font-size='30' font-weight='700' fill='%23fff' text-anchor='middle'%3EJR%3C/text%3E%3C/svg%3E" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%237b6cff'/%3E%3Ctext x='32' y='44' font-family='Verdana,sans-serif' font-size='34' font-weight='700' fill='%23fff' text-anchor='middle'%3EN%3C/text%3E%3C/svg%3E" />
 </head>
 <body>
 
   <!-- ================= TOP BAR ================= -->
   <header class="nav">
     <button class="brand" id="brandHome" aria-label="home">
-      <span class="brand__mark">JR</span>
-      <span class="brand__name">HTML&nbsp;JR</span>
+      <span class="brand__mark">N</span>
+      <span class="brand__name">Nox&nbsp;Loader</span>
     </button>
 
     <div class="search">
@@ -48,14 +48,14 @@
   <!-- ================= HTML VIEW ================= -->
   <section class="byo" id="htmlView" hidden>
     <div class="byo__inner">
-      <label class="drop" id="drop" tabindex="0">
-        <input id="fileInput" type="file" accept=".html,.htm,.svg,image/svg+xml,text/html" hidden />
+      <div class="drop" id="drop" role="button" tabindex="0">
         <span class="drop__icon">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4m0 0l-5 5m5-5l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </span>
         <span class="drop__title">drop a file or click to pick</span>
         <span class="drop__hint">.html or .svg</span>
-      </label>
+      </div>
+      <input id="fileInput" type="file" accept=".html,.htm,.svg,image/svg+xml,text/html" hidden />
 
       <div class="byo__or"><span>or</span></div>
 
